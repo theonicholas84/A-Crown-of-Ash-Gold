@@ -3,27 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A Song of Ice and Fire - Iron & Lineage</title>
+  <title>Iron & Lineage - ASOIAF Strategy RPG</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- TOPBAR: RESOURCE & TURN INFORMATION (EU4 Style) -->
+  <!-- ==========================================================================
+       MODAL: CHARACTER CREATION (Ditampilkan Sebelum Game Mulai)
+       ========================================================================== -->
+  <div id="creation-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h1 class="modal-title">Iron & Lineage</h1>
+      <p class="modal-subtitle">Forging Your Legacy in Westeros</p>
+      
+      <form id="creation-form" onsubmit="game.startGame(event)">
+        <div class="form-group">
+          <label>Character Name:</label>
+          <input type="text" id="create-name" value="Jon Rivers" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age:</label>
+            <input type="number" id="create-age" value="18" min="16" max="60" required>
+          </div>
+
+          <div class="form-group">
+            <label>Gender:</label>
+            <select id="create-gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Region of Origin:</label>
+          <select id="create-region">
+            <option value="The Riverlands">The Riverlands (+1 Stewardship)</option>
+            <option value="The North">The North (+1 Combat)</option>
+            <option value="The Westerlands">The Westerlands (+20 Initial Gold)</option>
+            <option value="Dorne">Dorne (+1 Intrigue)</option>
+            <option value="The Reach">The Reach (+1 Diplomacy)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Background Origin:</label>
+          <select id="create-origin">
+            <option value="Bastard">Bastard of a Minor House (High Intrigue, Moderate Combat)</option>
+            <option value="Hedge Knight">Landed Hedge Knight (High Combat & Tactics)</option>
+            <option value="Mercenary">Essos Mercenary Captain (Balanced Combat & Men)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-start">Begin Journey ►</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOPBAR: RESOURCE & TURN INFORMATION -->
   <header class="topbar">
     <div class="game-title">Iron & Lineage</div>
     
     <div class="resource-container">
       <div class="resource-item">
         <span class="resource-label">Gold:</span>
-        <span id="res-gold" class="resource-val">50</span>
+        <span id="res-gold" class="resource-val">0</span>
       </div>
       <div class="resource-item">
         <span class="resource-label">Prestige:</span>
-        <span id="res-prestige" class="resource-val">10</span>
+        <span id="res-prestige" class="resource-val">0</span>
       </div>
       <div class="resource-item">
         <span class="resource-label">Men:</span>
-        <span id="res-men" class="resource-val">15</span>
+        <span id="res-men" class="resource-val">0</span>
+      </div>
+      <div class="resource-item">
+        <span class="resource-label">Job:</span>
+        <span id="res-job" class="resource-val" style="color: #ffd166;">Unemployed</span>
       </div>
       <div class="resource-item">
         <span class="resource-label">Date:</span>
@@ -39,9 +97,10 @@
   <!-- MAIN WRAPPER: SIDEBAR + DASHBOARD CONTENT -->
   <div class="main-wrapper">
     
-    <!-- Sidebar Navigation (FM Style) -->
+    <!-- Sidebar Navigation -->
     <nav class="sidebar">
       <div class="nav-btn active" onclick="ui.switchTab('tab-character', event)">Character Profile</div>
+      <div class="nav-btn" onclick="ui.switchTab('tab-jobs', event)">Jobs & Contracts</div>
       <div class="nav-btn" onclick="ui.switchTab('tab-map', event)">Westeros Map</div>
       <div class="nav-btn" onclick="ui.switchTab('tab-military', event)">Military & Retinue</div>
     </nav>
@@ -49,7 +108,7 @@
     <!-- Main Dynamic Content -->
     <main class="content-area">
 
-      <!-- TAB 1: CHARACTER PROFILE (FM Style Attributes) -->
+      <!-- TAB 1: CHARACTER PROFILE -->
       <div id="tab-character" class="tab-content active">
         <div class="grid-2">
           
@@ -57,33 +116,22 @@
           <div class="panel">
             <div class="panel-header">Character Overview</div>
             <div class="char-header-info">
-              <div class="char-avatar">🛡️</div>
+              <div class="char-avatar" id="char-avatar">🛡️</div>
               <div>
-                <h2 id="char-name">Ser Jon Rivers</h2>
-                <p id="char-title">Hedge Knight of the Riverlands</p>
-                <p class="origin-tag">Origin: <span id="char-origin">Bastard</span></p>
+                <h2 id="char-name">-</h2>
+                <p id="char-title">-</p>
+                <p class="origin-tag">Age: <span id="char-age" style="color:var(--gold-bright);">-</span> | Gender: <span id="char-gender" style="color:var(--gold-bright);">-</span></p>
+                <p class="origin-tag">Region: <span id="char-region" style="color:var(--gold-accent);">-</span></p>
+                <p class="origin-tag">Origin: <span id="char-origin" style="color:var(--gold-accent);">-</span></p>
               </div>
-            </div>
-
-            <div class="panel-header">Customization</div>
-            <div class="custom-form">
-              <label>Character Name:</label>
-              <input type="text" id="input-name" value="Ser Jon Rivers" onchange="game.updateName(this.value)">
-              
-              <label>Origin/Background:</label>
-              <select id="select-origin" onchange="game.updateOrigin(this.value)">
-                <option value="Bastard">Bastard of a Minor House</option>
-                <option value="Hedge Knight">Landed Hedge Knight</option>
-                <option value="Mercenary">Essos Mercenary Captain</option>
-              </select>
             </div>
           </div>
 
-          <!-- Attributes Panel (FM Style numeric badge) -->
+          <!-- Attributes Panel -->
           <div class="panel">
             <div class="panel-header">Attributes & Skills (1-20)</div>
             <div id="attributes-list">
-              <!-- Dynamically populated by JS -->
+              <!-- Populated by JS -->
             </div>
           </div>
 
@@ -92,33 +140,36 @@
         <!-- History/Log Area -->
         <div class="panel">
           <div class="panel-header">Chronicle Log</div>
-          <div id="event-log" class="log-box">
-            <div class="log-entry">
-              <span class="log-time">[298 AC, Month 1]</span> 
-              <span class="log-text">You have set out to build your lineage in Westeros.</span>
-            </div>
-          </div>
+          <div id="event-log" class="log-box"></div>
         </div>
       </div>
 
-      <!-- TAB 2: WESTEROS MAP (EU4 Style Map Grid) -->
-      <div id="tab-map" class="tab-content">
-        <div class="panel map-panel">
-          <div class="panel-header">Realms & Fiefdoms</div>
-          <p class="section-desc">Select a region to manage or inspect holdings.</p>
+      <!-- TAB 2: JOBS & CONTRACTS (FITUR BARU) -->
+      <div id="tab-jobs" class="tab-content">
+        <div class="panel">
+          <div class="panel-header">Available Jobs & Contracts</div>
+          <p class="section-desc">Pilih pekerjaan untuk mendapatkan penghasilan bulanan dan meningkatkan statistik karaktermu setiap turn.</p>
           
-          <div id="province-grid" class="map-grid">
+          <div id="jobs-list" class="jobs-grid">
             <!-- Dynamically populated by JS -->
           </div>
         </div>
       </div>
 
-      <!-- TAB 3: MILITARY & RETINUE -->
+      <!-- TAB 3: WESTEROS MAP -->
+      <div id="tab-map" class="tab-content">
+        <div class="panel map-panel">
+          <div class="panel-header">Realms & Fiefdoms</div>
+          <p class="section-desc">Select a region to manage or inspect holdings.</p>
+          <div id="province-grid" class="map-grid"></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MILITARY & RETINUE -->
       <div id="tab-military" class="tab-content">
         <div class="panel">
           <div class="panel-header">Retinue Management</div>
           <p class="section-desc">Recruit sellswords and men-at-arms to increase your military presence.</p>
-          
           <div class="btn-group">
             <button class="btn-action" onclick="game.recruitMen(5, 20)">Recruit 5 Men (20 Gold)</button>
             <button class="btn-action" onclick="game.recruitMen(10, 35)">Recruit 10 Men (35 Gold)</button>
