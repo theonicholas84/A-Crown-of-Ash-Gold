@@ -9,7 +9,7 @@ const state = {
     gender: "Male",
     region: "",
     origin: "",
-    title: "Unlanded Nobody",
+    title: "Unlanded Wanderer",
     gold: 30,
     prestige: 0,
     men: 0,
@@ -25,8 +25,8 @@ const state = {
   jobs: [
     {
       id: "guard",
-      title: "City Watch Guard",
-      desc: "Patrol the streets and keep peace in the city.",
+      title: "City Watch Officer",
+      desc: "Patrol the urban districts and enforce sovereign law.",
       req: { stat: "combat", val: 5 },
       income: 12,
       prestige: 1,
@@ -34,8 +34,8 @@ const state = {
     },
     {
       id: "scribe",
-      title: "Merchant Scribe",
-      desc: "Manage ledgers, taxes, and trade accounts for local lords.",
+      title: "Estate Steward",
+      desc: "Manage ledgers, tithes, and grain reserves for a high lord.",
       req: { stat: "stewardship", val: 5 },
       income: 18,
       prestige: 1,
@@ -43,8 +43,8 @@ const state = {
     },
     {
       id: "informant",
-      title: "Tavern Informant",
-      desc: "Gather whispers and secrets for wealthy benefactors.",
+      title: "Spymaster's Whisperer",
+      desc: "Infiltrate taverns and gather political secrets.",
       req: { stat: "intrigue", val: 6 },
       income: 15,
       prestige: 2,
@@ -52,8 +52,8 @@ const state = {
     },
     {
       id: "mercenary",
-      title: "Sellsword Escort",
-      desc: "Protect caravans from bandits along the Kingsroad.",
+      title: "Free Company Captain",
+      desc: "Lead armed escorts along high-risk trade routes.",
       req: { stat: "combat", val: 8 },
       income: 25,
       prestige: 3,
@@ -75,8 +75,8 @@ const state = {
    -------------------------------------------------------------------------- */
 const ui = {
   switchTab(tabId, evt) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     
     document.getElementById(tabId).classList.add('active');
     if (evt && evt.currentTarget) {
@@ -90,8 +90,8 @@ const ui = {
     document.getElementById('res-men').innerText = state.player.men;
     document.getElementById('res-date').innerText = `${state.date.year} AC, Month ${state.date.month}`;
     
-    const activeJobObj = state.jobs.find(j => j.id === state.player.currentJob);
-    document.getElementById('res-job').innerText = activeJobObj ? activeJobObj.title : "Unemployed";
+    const activeJob = state.jobs.find(j => j.id === state.player.currentJob);
+    document.getElementById('res-job').innerText = activeJob ? activeJob.title : "Unemployed";
   },
 
   renderProfile() {
@@ -108,15 +108,15 @@ const ui = {
     container.innerHTML = '';
 
     for (const [key, value] of Object.entries(state.player.stats)) {
-      let badgeClass = 'val-mid';
-      if (value < 5) badgeClass = 'val-low';
-      if (value >= 8) badgeClass = 'val-high';
+      let badgeClass = 'badge-mid';
+      if (value < 5) badgeClass = 'badge-low';
+      if (value >= 8) badgeClass = 'badge-high';
 
       const row = document.createElement('div');
-      row.className = 'stat-row';
+      row.className = 'attr-row';
       row.innerHTML = `
-        <span class="stat-name">${key.toUpperCase()}</span>
-        <span class="stat-badge ${badgeClass}">${value}</span>
+        <span class="attr-name">${key}</span>
+        <span class="attr-badge ${badgeClass}">${value}</span>
       `;
       container.appendChild(row);
     }
@@ -134,17 +134,19 @@ const ui = {
       card.className = `job-card ${isCurrent ? 'active-job' : ''}`;
       card.innerHTML = `
         <div>
-          <div class="job-title">${job.title}</div>
+          <div class="job-name">${job.title}</div>
           <div class="job-desc">${job.desc}</div>
         </div>
         <div>
-          <div class="job-rewards">+${job.income} Gold/mo | +${job.prestige} Prestige | Gains ${job.statBoost.toUpperCase()}</div>
-          <div class="job-req">Requirement: ${job.req.stat.toUpperCase()} ≥ ${job.req.val}</div>
+          <div class="job-perks">+${job.income} Gold/mo | +${job.prestige} Prestige | Trains ${job.statBoost.toUpperCase()}</div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
+            Req: ${job.req.stat.toUpperCase()} ≥ ${job.req.val}
+          </div>
         </div>
-        <button class="btn-action" 
+        <button class="v-btn" 
           onclick="game.selectJob('${job.id}')" 
           ${!isQualified || isCurrent ? 'disabled' : ''}>
-          ${isCurrent ? 'Current Job' : isQualified ? 'Apply Job' : 'Locked'}
+          ${isCurrent ? 'Active Contract' : isQualified ? 'Sign Contract' : 'Locked'}
         </button>
       `;
       container.appendChild(card);
@@ -159,13 +161,9 @@ const ui = {
       const card = document.createElement('div');
       card.className = 'province-card';
       card.innerHTML = `
-        <div>
-          <h3 style="color: var(--gold-bright); font-family: var(--font-serif);">${p.name}</h3>
-          <div class="province-owner">Ruler: ${p.owner}</div>
-        </div>
-        <div class="province-income">
-          Monthly Income: +${p.tax} Gold
-        </div>
+        <h4 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">${p.name}</h4>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Ruler: ${p.owner}</div>
+        <div style="font-size:0.75rem; color:var(--fm-green-accent); margin-top:4px;">Taxes: +${p.tax} Gold</div>
       `;
       grid.appendChild(card);
     });
@@ -174,42 +172,39 @@ const ui = {
   addLog(text) {
     const logBox = document.getElementById('event-log');
     const entry = document.createElement('div');
-    entry.className = 'log-entry';
+    entry.className = 'log-item';
     entry.innerHTML = `
-      <span class="log-time">[${state.date.year} AC, M${state.date.month}]</span> 
-      <span class="log-text">${text}</span>
+      <span class="log-date">[${state.date.year} AC, M${state.date.month}]</span> ${text}
     `;
     logBox.prepend(entry);
   }
 };
 
 /* --------------------------------------------------------------------------
-   3. GAME LOGIC ENGINE
+   3. GAME ENGINE
    -------------------------------------------------------------------------- */
 const game = {
   startGame(e) {
     e.preventDefault();
 
-    // 1. Read Inputs
+    // 1. Get Values
     state.player.name = document.getElementById('create-name').value;
     state.player.age = parseInt(document.getElementById('create-age').value);
     state.player.gender = document.getElementById('create-gender').value;
     state.player.region = document.getElementById('create-region').value;
     state.player.origin = document.getElementById('create-origin').value;
 
-    // 2. Base Stats Assignment
+    // 2. Compute Base Stats
     let stats = { combat: 5, tactics: 5, stewardship: 5, intrigue: 5, diplomacy: 5 };
 
-    // Apply Background Traits
     if (state.player.origin === 'Bastard') {
-      stats.intrigue += 3; stats.combat += 2; state.player.title = "Bastard wanderer";
+      stats.intrigue += 3; stats.combat += 2; state.player.title = "Bastard Wanderer";
     } else if (state.player.origin === 'Hedge Knight') {
       stats.combat += 4; stats.tactics += 2; state.player.title = "Hedge Knight";
     } else if (state.player.origin === 'Mercenary') {
       stats.tactics += 3; stats.combat += 2; state.player.men = 5; state.player.title = "Mercenary Captain";
     }
 
-    // Apply Region Bonuses
     if (state.player.region === 'The Riverlands') stats.stewardship += 1;
     if (state.player.region === 'The North') stats.combat += 1;
     if (state.player.region === 'The Westerlands') state.player.gold += 20;
@@ -218,15 +213,19 @@ const game = {
 
     state.player.stats = stats;
 
-    // 3. Close Modal & Init Game UI
-    document.getElementById('creation-modal').style.display = 'none';
-    
+    // 3. REMOVE MODAL PERMANENTLY FROM DOM (Sama seperti habis login)
+    const modal = document.getElementById('creation-modal');
+    modal.remove();
+
+    // 4. Reveal Game UI & Render
+    document.getElementById('game-interface').classList.remove('hidden');
+
     ui.renderTopBar();
     ui.renderProfile();
     ui.renderJobs();
     ui.renderProvinces();
     
-    ui.addLog(`Welcome, ${state.player.name} of ${state.player.region}. Your journey in Westeros begins!`);
+    ui.addLog(`Welcome, ${state.player.name} of ${state.player.region}. Your chronicle begins.`);
   },
 
   selectJob(jobId) {
@@ -236,30 +235,28 @@ const game = {
     state.player.currentJob = jobId;
     ui.renderTopBar();
     ui.renderJobs();
-    ui.addLog(`You have taken up employment as a ${selectedJob.title}.`);
+    ui.addLog(`Contract signed: You are now serving as a ${selectedJob.title}.`);
   },
 
   recruitMen(amount, cost) {
     if (state.player.gold < cost) {
-      ui.addLog("Not enough gold to recruit men!");
+      ui.addLog("Insufficient treasury to muster men-at-arms!");
       return;
     }
     state.player.gold -= cost;
     state.player.men += amount;
     ui.renderTopBar();
-    ui.addLog(`Recruited ${amount} men-at-arms for ${cost} Gold.`);
+    ui.addLog(`Mustered ${amount} men-at-arms into your retinue.`);
   },
 
   nextTurn() {
-    // Advance Time
     state.date.month += 1;
     if (state.date.month > 12) {
       state.date.month = 1;
       state.date.year += 1;
-      state.player.age += 1; // Age increases every year
+      state.player.age += 1;
     }
 
-    // Calculate Job Earnings & Stat Boosts
     let income = 0;
     let upkeep = Math.floor(state.player.men * 0.5);
 
@@ -269,10 +266,9 @@ const game = {
         income += activeJob.income;
         state.player.prestige += activeJob.prestige;
 
-        // Small chance to increase attribute on turn
-        if (Math.random() < 0.3 && state.player.stats[activeJob.statBoost] < 20) {
+        if (Math.random() < 0.35 && state.player.stats[activeJob.statBoost] < 20) {
           state.player.stats[activeJob.statBoost] += 1;
-          ui.addLog(`Your experience as a ${activeJob.title} increased your ${activeJob.statBoost.toUpperCase()} stat!`);
+          ui.addLog(`Active service increased your ${activeJob.statBoost.toUpperCase()} attribute!`);
         }
       }
     }
@@ -280,10 +276,9 @@ const game = {
     const netGold = income - upkeep;
     state.player.gold += netGold;
 
-    // Render Updates & Log
     ui.renderTopBar();
     ui.renderProfile();
     ui.renderJobs();
-    ui.addLog(`Month ended. Earnings: +${income} Gold, Upkeep: -${upkeep} Gold. Net: ${netGold >= 0 ? '+' : ''}${netGold} Gold.`);
+    ui.addLog(`Turn ended. Revenue: +${income} G, Upkeep: -${upkeep} G (Net: ${netGold >= 0 ? '+' : ''}${netGold} G).`);
   }
 };
