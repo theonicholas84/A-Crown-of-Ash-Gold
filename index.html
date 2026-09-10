@@ -22,18 +22,18 @@
 
       <form id="creation-form" onsubmit="game.startGame(event)" class="login-form">
         <div class="form-group">
-          <label>House / Nama Karakter</label>
+          <label for="create-name">House / Nama Karakter</label>
           <input type="text" id="create-name" value="Jon Rivers" autocomplete="off" required>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Usia</label>
+            <label for="create-age">Usia</label>
             <input type="number" id="create-age" value="18" min="16" max="60" required>
           </div>
 
           <div class="form-group">
-            <label>Jenis Kelamin</label>
+            <label for="create-gender">Jenis Kelamin</label>
             <select id="create-gender">
               <option value="Male">Laki-laki</option>
               <option value="Female">Perempuan</option>
@@ -42,7 +42,7 @@
         </div>
 
         <div class="form-group">
-          <label>Lokasi Awal Wilayah (Region)</label>
+          <label for="create-region">Lokasi Awal Wilayah (Region)</label>
           <select id="create-region">
             <option value="The North">The North (House Stark) [+1 Combat]</option>
             <option value="The Westerlands">The Westerlands (House Lannister) [+20 Gold Awal]</option>
@@ -55,7 +55,7 @@
         </div>
 
         <div class="form-group">
-          <label>Background Asal-Usul Karakter</label>
+          <label for="create-origin">Background Asal-Usul Karakter</label>
           <select id="create-origin">
             <option value="Bastard">Bastard of a Noble House (High Intrigue, Low Prestige)</option>
             <option value="Hedge Knight">Landed Hedge Knight (High Combat & Tactics, Low Gold)</option>
@@ -87,7 +87,7 @@
         </div>
         <div class="stat-pill">
           <span class="stat-lbl">Hunger</span>
-          <span id="res-hunger-val" class="stat-val">0/100</span>
+          <span id="res-hunger-val" class="stat-val warning-color">0/100</span>
         </div>
         <div class="stat-pill">
           <span class="stat-lbl">Gold</span>
@@ -104,6 +104,10 @@
         <div class="stat-pill">
           <span class="stat-lbl">Tanah</span>
           <span id="res-land" class="stat-val">0 Ha</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-lbl">Pasukan</span>
+          <span id="res-troops" class="stat-val military-color">0</span>
         </div>
         <div class="stat-pill">
           <span class="stat-lbl">Talent Pts</span>
@@ -131,9 +135,6 @@
         <div class="nav-item" onclick="ui.switchTab('tab-houses', event)">
           <span class="nav-icon">👑</span> Tawaran Great Houses
         </div>
-        <div class="nav-item" onclick="ui.switchTab('tab-vassal', event)">
-          <span class="nav-icon">🛡️</span> Trah & House Bawahan
-        </div>
         <div class="nav-item" onclick="ui.switchTab('tab-jobs', event)">
           <span class="nav-icon">📜</span> Kontrak & Pangkat
         </div>
@@ -150,7 +151,7 @@
           <span class="nav-icon">🗺️</span> Peta Wilayah
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-military', event)">
-          <span class="nav-icon">⚔️</span> Militer & Pasukan
+          <span class="nav-icon">⚔️</span> Militer & Ekspedisi
         </div>
       </nav>
 
@@ -196,6 +197,14 @@
                   </div>
                 </div>
               </div>
+
+              <!-- INVENTORY & ACTIVE BUFFS PANEL -->
+              <div class="sub-section">
+                <div class="sub-header">EQUIPMENT & BARANG DIDAPAT</div>
+                <div id="inventory-list" class="inventory-tags-grid">
+                  <span class="empty-tag">Belum ada barang di ransel</span>
+                </div>
+              </div>
             </div>
 
             <div class="v-card stats-card">
@@ -223,30 +232,21 @@
         <div id="tab-houses" class="tab-page">
           <div class="v-card">
             <div class="card-header">TAWARAN DARI GREAT HOUSES WESTEROS</div>
-            <p class="card-desc">Jika Anda mengabdi kepada salah satu Lord, Anda otomatis berkarier sebagai Ksatria Setia (House Knight) mereka.</p>
+            <p class="card-desc">Semakin tinggi Prestige dan Reputasi Anda, semakin banyak House Noble yang menawarkan pengabdian dan alur cerita khusus.</p>
             <div id="noble-offers-list" class="jobs-table-grid"></div>
-          </div>
-        </div>
-
-        <!-- TAB BARU: HOUSE BAWAHAN / VASSALAGE -->
-        <div id="tab-vassal" class="tab-page">
-          <div class="v-card">
-            <div class="card-header">PENDIRIAN HOUSE BAWAHAN (VASSAL HOUSE)</div>
-            <p class="card-desc">Dapatkan persetujuan dari High Lord Anda untuk mendirikan House Kebangsawanan baru di bawah panji mereka.</p>
-            <div id="vassal-house-panel"></div>
           </div>
         </div>
 
         <!-- TAB 4: JOBS & RANKS -->
         <div id="tab-jobs" class="tab-page">
           <div class="v-card">
-            <div class="card-header">KONTRAK SWASTA & PROMOSI</div>
+            <div class="card-header">KONTRAK AKTIF & PROMOSI PANGKAT</div>
             <div id="active-job-details"></div>
           </div>
 
           <div class="v-card">
             <div class="card-header">KONTRAK UMUM TERSEDIA</div>
-            <p class="card-desc">Pekerjaan umum memberikan emas bulanan dan meningkatkan atribut karakter.</p>
+            <p class="card-desc">Pekerjaan umum memberikan emas bulanan dan meningkatkan atribut karakter secara berkala.</p>
             <div id="jobs-list" class="jobs-table-grid"></div>
           </div>
         </div>
@@ -254,8 +254,8 @@
         <!-- TAB 5: SHOP -->
         <div id="tab-shop" class="tab-page">
           <div class="v-card">
-            <div class="card-header">PASAR WESTEROS (PERSENJATAAN & ARMOR)</div>
-            <p class="card-desc">Beli makanan untuk bertahan hidup, pedang tajam, serta armor kain atau besi untuk atribut perang.</p>
+            <div class="card-header">PASAR WESTEROS (PERSENJATAAN, ARMOR & LOGISTIK)</div>
+            <p class="card-desc">Beli ransum makanan untuk mengurangi tingkat kelaparan, senjata tajam, serta pelindung baja untuk meningkatkan daya tempur.</p>
             <div id="shop-list" class="shop-grid"></div>
           </div>
         </div>
@@ -264,8 +264,8 @@
         <div id="tab-land" class="tab-page">
           <div class="v-card">
             <div class="card-header">INVESTASI TANAH & PROPERTI PER HEKTAR</div>
-            <p class="card-desc">Beli tanah per hektar di wilayah Anda untuk mendapatkan sewa bulanan, atau jual saat butuh likuiditas emas instan.</p>
-            <div id="land-panel" style="display:flex; flex-direction:column; gap:15px;"></div>
+            <p class="card-desc">Beli tanah per hektar di wilayah Anda untuk mendapat sewa bulanan, atau jual saat membutuhkan emas instan.</p>
+            <div id="land-panel" class="land-details-box"></div>
           </div>
         </div>
 
@@ -280,7 +280,7 @@
 
             <div class="v-card">
               <div class="card-header">TALENT TREE KARAKTER</div>
-              <p class="card-desc">Gunakan Talent Point untuk membuka keahlian pasif di bidang Perang, Ekonomi, dan Intrik.</p>
+              <p class="card-desc">Gunakan Talent Point untuk membuka keahlian pasif di bidang Perang, Ekonomi, dan Intrik Politik.</p>
               <div id="talent-list" class="talent-grid"></div>
             </div>
           </div>
@@ -289,21 +289,18 @@
         <!-- TAB 8: REALM MAP -->
         <div id="tab-map" class="tab-page">
           <div class="v-card">
-            <div class="card-header">WILAYAH & KEKUASAAN WESTEROS</div>
-            <p class="card-desc">Kondisi politik wilayah Westeros pada tahun 298 AC.</p>
+            <div class="card-header">WILAYAH & KEKUASAAN WESTEROS (298 AC)</div>
+            <p class="card-desc">Tinjau peta faksi politik, modifier wilayah, dan potensi pengaruh Great Houses.</p>
             <div id="province-grid" class="province-matrix"></div>
           </div>
         </div>
 
-        <!-- TAB 9: MILITARY -->
+        <!-- TAB 9: MILITARY & EXPEDITION -->
         <div id="tab-military" class="tab-page">
           <div class="v-card">
-            <div class="card-header">REKRUTMEN DAN MILITER</div>
-            <p class="card-desc">Rekrut dan biayai prajurit untuk memperkuat pengaruh Anda dalam perang antar Lord.</p>
-            <div class="action-panel">
-              <button class="v-btn" onclick="game.recruitMen(5, 20)">Rekrut 5 Prajurit (20 Gold)</button>
-              <button class="v-btn" onclick="game.recruitMen(10, 35)">Rekrut 10 Prajurit (35 Gold)</button>
-            </div>
+            <div class="card-header">BARAK REKRUTMEN DAN MILITER</div>
+            <p class="card-desc">Rekrut dan biayai prajurit bayaran untuk memperkuat barisan perang serta menjalankan pertempuran khusus.</p>
+            <div id="military-dashboard" class="military-panel-grid"></div>
           </div>
         </div>
 
@@ -311,7 +308,7 @@
     </div>
   </div>
 
-  <!-- POP-UP MODAL UNTUK EVENT DECISION -->
+  <!-- POP-UP MODAL UNTUK EVENT DECISION & SURAT -->
   <div id="event-modal-overlay" class="login-screen hidden">
     <div class="login-frame event-modal-frame">
       <div class="login-header">
