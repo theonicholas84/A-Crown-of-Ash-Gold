@@ -113,6 +113,10 @@
           <span class="stat-lbl">Talent Pts</span>
           <span id="res-talent-pts" class="stat-val highlight-color">0</span>
         </div>
+        <div class="stat-pill location-pill">
+          <span class="stat-lbl">Lokasi</span>
+          <span id="res-location" class="stat-val">-</span>
+        </div>
         <div class="stat-pill date-pill">
           <span class="stat-lbl">Waktu</span>
           <span id="res-date" class="stat-val">298 AC, Month 1</span>
@@ -125,33 +129,40 @@
     <div class="main-layout">
       <!-- SIDEBAR NAVIGATION -->
       <nav class="sidebar">
-        <div class="nav-section-title">MANAJEMEN</div>
+        <div class="nav-section-title">DIRI & RUMAH TANGGA</div>
         <div class="nav-item active" onclick="ui.switchTab('tab-character', event)">
           <span class="nav-icon">👤</span> Profil & Stat
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-inbox', event)">
           <span class="nav-icon">📩</span> Kotak Surat <span id="inbox-badge" class="badge-unread">0</span>
         </div>
-        <div class="nav-item" onclick="ui.switchTab('tab-houses', event)">
-          <span class="nav-icon">👑</span> Tawaran Great Houses
-        </div>
-        <div class="nav-item" onclick="ui.switchTab('tab-jobs', event)">
-          <span class="nav-icon">📜</span> Kontrak & Pangkat
-        </div>
         <div class="nav-item" onclick="ui.switchTab('tab-shop', event)">
           <span class="nav-icon">🛒</span> Pasar & Peralatan
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-land', event)">
-          <span class="nav-icon">🏞️</span> Jual Beli Tanah
+          <span class="nav-icon">🏞️</span> Tanah & Rumah House
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-talents', event)">
           <span class="nav-icon">🧪</span> Riset & Talent Tree
         </div>
-        <div class="nav-item" onclick="ui.switchTab('tab-map', event)">
-          <span class="nav-icon">🗺️</span> Peta Wilayah
+
+        <div class="nav-section-title">KARIER & POLITIK</div>
+        <div class="nav-item" onclick="ui.switchTab('tab-jobs', event)">
+          <span class="nav-icon">📜</span> Kontrak & Pangkat
+        </div>
+        <div class="nav-item" onclick="ui.switchTab('tab-houses', event)">
+          <span class="nav-icon">👑</span> Tawaran Great Houses
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-military', event)">
           <span class="nav-icon">⚔️</span> Militer & Ekspedisi
+        </div>
+
+        <div class="nav-section-title">DUNIA</div>
+        <div class="nav-item" onclick="ui.switchTab('tab-map', event)">
+          <span class="nav-icon">🗺️</span> Peta Wilayah
+        </div>
+        <div class="nav-item" onclick="ui.switchTab('tab-travel', event)">
+          <span class="nav-icon">⛵</span> Perjalanan Westeros & Essos
         </div>
       </nav>
 
@@ -267,6 +278,12 @@
             <p class="card-desc">Beli tanah per hektar di wilayah Anda untuk mendapat sewa bulanan, atau jual saat membutuhkan emas instan.</p>
             <div id="land-panel" class="land-details-box"></div>
           </div>
+
+          <div class="v-card">
+            <div class="card-header">MENDIRIKAN HOUSE BARU (PERLU IZIN LORD)</div>
+            <p class="card-desc">Setelah bersumpah setia pada seorang Lord Agung, Anda dapat mengajukan izin untuk mendirikan House Bawahan (Bannerman) baru di atas tanah milik Anda.</p>
+            <div id="vassal-house-panel" class="land-details-box"></div>
+          </div>
         </div>
 
         <!-- TAB 7: TALENT & RESEARCH TREE -->
@@ -292,6 +309,26 @@
             <div class="card-header">WILAYAH & KEKUASAAN WESTEROS (298 AC)</div>
             <p class="card-desc">Tinjau peta faksi politik, modifier wilayah, dan potensi pengaruh Great Houses.</p>
             <div id="province-grid" class="province-matrix"></div>
+          </div>
+        </div>
+
+        <!-- TAB: TRAVEL -->
+        <div id="tab-travel" class="tab-page">
+          <div class="v-card">
+            <div class="card-header">STATUS PERJALANAN SAAT INI</div>
+            <div id="travel-status-panel" class="land-details-box"></div>
+          </div>
+
+          <div class="v-card">
+            <div class="card-header">🏰 WESTEROS — TUJUH KERAJAAN</div>
+            <p class="card-desc">Berkuda antar wilayah Westeros. Perjalanan darat memakan waktu singkat namun tetap berisiko bandit di jalan.</p>
+            <div id="travel-westeros-grid" class="travel-grid"></div>
+          </div>
+
+          <div class="v-card essos-card">
+            <div class="card-header">🐉 ESSOS — SEBERANG LAUT SEMPIT</div>
+            <p class="card-desc">Berlayar menyeberangi Laut Sempit menuju Free Cities dan Teluk Budak. Di Essos, Anda dapat menawarkan pengabdian kepada Daenerys Targaryen, Ibu Naga.</p>
+            <div id="travel-essos-grid" class="travel-grid"></div>
           </div>
         </div>
 
