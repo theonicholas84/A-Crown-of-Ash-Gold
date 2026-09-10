@@ -11,15 +11,13 @@
 </head>
 <body>
 
-  <!-- ==========================================================================
-       LOGIN / CHARACTER CREATION SCREEN (Dihapus dari DOM setelah login)
-       ========================================================================== -->
+  <!-- LOGIN / CHARACTER CREATION SCREEN -->
   <div id="creation-modal" class="login-screen">
     <div class="login-frame">
       <div class="login-header">
         <div class="victoria-crest">⚜️</div>
         <h1 class="game-title-grand">IRON & LINEAGE</h1>
-        <p class="game-tagline">A Chronicle of Blood, Ambition & Power</p>
+        <p class="game-tagline">A Chronicle of Blood, Ambition & Power (298 AC)</p>
       </div>
 
       <form id="creation-form" onsubmit="game.startGame(event)" class="login-form">
@@ -68,10 +66,10 @@
     </div>
   </div>
 
-  <!-- MAIN GAME INTERFACE (FM + VICTORIAN DASHBOARD) -->
+  <!-- MAIN GAME INTERFACE -->
   <div id="game-interface" class="game-interface hidden">
     
-    <!-- TOPBAR: VICTORIAN GOLD & LEATHER -->
+    <!-- TOPBAR -->
     <header class="topbar">
       <div class="brand">
         <span class="brand-crest">⚜️</span>
@@ -111,6 +109,9 @@
         <div class="nav-item active" onclick="ui.switchTab('tab-character', event)">
           <span class="nav-icon">👤</span> Profile & Attributes
         </div>
+        <div class="nav-item" onclick="ui.switchTab('tab-inbox', event)">
+          <span class="nav-icon">📩</span> FM Inbox <span id="inbox-badge" class="badge-unread">0</span>
+        </div>
         <div class="nav-item" onclick="ui.switchTab('tab-jobs', event)">
           <span class="nav-icon">📜</span> Contracts & Duties
         </div>
@@ -128,7 +129,6 @@
         <!-- TAB 1: PROFILE & STATS -->
         <div id="tab-character" class="tab-page active">
           <div class="dashboard-grid">
-            
             <div class="v-card profile-card">
               <div class="card-header">CHARACTER OVERVIEW</div>
               <div class="profile-body">
@@ -147,11 +147,8 @@
 
             <div class="v-card stats-card">
               <div class="card-header">ATTRIBUTES & SKILLS (FM RATING 1-20)</div>
-              <div id="attributes-list" class="attributes-grid">
-                <!-- Attributes injected via JS -->
-              </div>
+              <div id="attributes-list" class="attributes-grid"></div>
             </div>
-
           </div>
 
           <div class="v-card chronicle-card">
@@ -160,27 +157,34 @@
           </div>
         </div>
 
-        <!-- TAB 2: JOBS & CONTRACTS -->
+        <!-- TAB 2: FOOTBALL MANAGER STYLE INBOX -->
+        <div id="tab-inbox" class="tab-page">
+          <div class="v-card">
+            <div class="card-header">DISPATCHES & RAVENS (INBOX)</div>
+            <p class="card-desc">Review career updates, realm lore, and respond to official job events.</p>
+            <div id="inbox-list" class="inbox-grid"></div>
+          </div>
+        </div>
+
+        <!-- TAB 3: JOBS & CONTRACTS -->
         <div id="tab-jobs" class="tab-page">
           <div class="v-card">
             <div class="card-header">AVAILABLE CONTRACTS & POSITIONS</div>
             <p class="card-desc">Securing an official position yields monthly revenues and raises attributes through experience.</p>
-            <div id="jobs-list" class="jobs-table-grid">
-              <!-- Jobs injected via JS -->
-            </div>
+            <div id="jobs-list" class="jobs-table-grid"></div>
           </div>
         </div>
 
-        <!-- TAB 3: REALM MAP -->
+        <!-- TAB 4: REALM MAP -->
         <div id="tab-map" class="tab-page">
           <div class="v-card">
             <div class="card-header">WESTEROS PROVINCES & FIEFDOMS</div>
-            <p class="card-desc">Overview of holdfasts and territorial controllers in the realm.</p>
+            <p class="card-desc">Overview of holdfasts and territorial controllers in the realm during King Robert's reign.</p>
             <div id="province-grid" class="province-matrix"></div>
           </div>
         </div>
 
-        <!-- TAB 4: MILITARY -->
+        <!-- TAB 5: MILITARY -->
         <div id="tab-military" class="tab-page">
           <div class="v-card">
             <div class="card-header">MILITARY & RETINUE RECRUITMENT</div>
@@ -193,6 +197,18 @@
         </div>
 
       </main>
+    </div>
+  </div>
+
+  <!-- POP-UP MODAL UNTUK FM EVENT DECISION -->
+  <div id="event-modal-overlay" class="login-screen hidden">
+    <div class="login-frame event-modal-frame">
+      <div class="login-header">
+        <span id="modal-event-sender" class="event-sender-tag">DISPATCH</span>
+        <h2 id="modal-event-title" class="game-title-grand" style="font-size:1.3rem; margin-top:5px;">-</h2>
+      </div>
+      <p id="modal-event-desc" class="event-body-text">-</p>
+      <div id="modal-event-choices" class="event-choices-box"></div>
     </div>
   </div>
 
