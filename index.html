@@ -78,20 +78,24 @@
 
       <div class="fm-stat-bar">
         <div class="stat-pill">
+          <span class="stat-lbl">Health</span>
+          <span id="res-health-val" class="stat-val">100/100</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-lbl">Hunger</span>
+          <span id="res-hunger-val" class="stat-val">0/100</span>
+        </div>
+        <div class="stat-pill">
           <span class="stat-lbl">Gold</span>
           <span id="res-gold" class="stat-val gold-color">0</span>
         </div>
         <div class="stat-pill">
-          <span class="stat-lbl">Prestige</span>
-          <span id="res-prestige" class="stat-val">0</span>
+          <span class="stat-lbl">Talent Pts</span>
+          <span id="res-talent-pts" class="stat-val highlight-color">0</span>
         </div>
         <div class="stat-pill">
           <span class="stat-lbl">Retinue</span>
           <span id="res-men" class="stat-val">0</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-lbl">Position</span>
-          <span id="res-job" class="stat-val highlight-color">Unemployed</span>
         </div>
         <div class="stat-pill date-pill">
           <span class="stat-lbl">Date</span>
@@ -107,13 +111,19 @@
       <nav class="sidebar">
         <div class="nav-section-title">MANAGEMENT</div>
         <div class="nav-item active" onclick="ui.switchTab('tab-character', event)">
-          <span class="nav-icon">👤</span> Profile & Attributes
+          <span class="nav-icon">👤</span> Profile & Stats
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-inbox', event)">
           <span class="nav-icon">📩</span> FM Inbox <span id="inbox-badge" class="badge-unread">0</span>
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-jobs', event)">
-          <span class="nav-icon">📜</span> Contracts & Duties
+          <span class="nav-icon">📜</span> Contracts & Rank
+        </div>
+        <div class="nav-item" onclick="ui.switchTab('tab-shop', event)">
+          <span class="nav-icon">🛒</span> Shop & Market
+        </div>
+        <div class="nav-item" onclick="ui.switchTab('tab-talents', event)">
+          <span class="nav-icon">🧪</span> Research & Talents
         </div>
         <div class="nav-item" onclick="ui.switchTab('tab-map', event)">
           <span class="nav-icon">🗺️</span> Realm Map
@@ -133,9 +143,30 @@
               <div class="card-header">CHARACTER OVERVIEW</div>
               <div class="profile-body">
                 <div class="avatar-frame" id="char-avatar">🛡️</div>
-                <div class="profile-details">
+                <div class="profile-details" style="flex:1;">
                   <h2 id="char-name" class="char-title-name">-</h2>
                   <div id="char-title" class="char-subtitle">-</div>
+                  
+                  <div style="margin-bottom: 8px;">
+                    <div style="display:flex; justify-size:space-between; font-size:0.7rem; color:var(--text-muted);">
+                      <span>HEALTH</span>
+                    </div>
+                    <div class="progress-container">
+                      <div id="bar-health" class="progress-bar bg-health" style="width: 100%;"></div>
+                      <span id="bar-health-text" class="progress-text">100 / 100</span>
+                    </div>
+                  </div>
+
+                  <div style="margin-bottom: 12px;">
+                    <div style="display:flex; justify-size:space-between; font-size:0.7rem; color:var(--text-muted);">
+                      <span>HUNGER</span>
+                    </div>
+                    <div class="progress-container">
+                      <div id="bar-hunger" class="progress-bar bg-hunger" style="width: 0%;"></div>
+                      <span id="bar-hunger-text" class="progress-text">0 / 100</span>
+                    </div>
+                  </div>
+
                   <div class="char-meta-grid">
                     <div><span>Age / Sex:</span> <strong id="char-age">-</strong> (<strong id="char-gender">-</strong>)</div>
                     <div><span>Origin:</span> <strong id="char-origin">-</strong></div>
@@ -157,7 +188,7 @@
           </div>
         </div>
 
-        <!-- TAB 2: FOOTBALL MANAGER STYLE INBOX -->
+        <!-- TAB 2: INBOX -->
         <div id="tab-inbox" class="tab-page">
           <div class="v-card">
             <div class="card-header">DISPATCHES & RAVENS (INBOX)</div>
@@ -166,8 +197,15 @@
           </div>
         </div>
 
-        <!-- TAB 3: JOBS & CONTRACTS -->
+        <!-- TAB 3: JOBS & RANKS -->
         <div id="tab-jobs" class="tab-page">
+          <div class="v-card">
+            <div class="card-header">CURRENT CONTRACT & PROMOTION PROGRESS</div>
+            <div id="active-job-details">
+              <!-- Render via JS -->
+            </div>
+          </div>
+
           <div class="v-card">
             <div class="card-header">AVAILABLE CONTRACTS & POSITIONS</div>
             <p class="card-desc">Securing an official position yields monthly revenues and raises attributes through experience.</p>
@@ -175,7 +213,35 @@
           </div>
         </div>
 
-        <!-- TAB 4: REALM MAP -->
+        <!-- TAB 4: SHOP -->
+        <div id="tab-shop" class="tab-page">
+          <div class="v-card">
+            <div class="card-header">WESTEROS MARKET & PROVISIONS</div>
+            <p class="card-desc">Purchase food to prevent starvation, medical supplies, or weapons to bolster your abilities.</p>
+            <div id="shop-list" class="shop-grid"></div>
+          </div>
+        </div>
+
+        <!-- TAB 5: TALENT & RESEARCH TREE -->
+        <div id="tab-talents" class="tab-page">
+          <div class="dashboard-grid">
+            <div class="v-card">
+              <div class="card-header">MAESTER'S ACADEMIC RESEARCH</div>
+              <p class="card-desc">Allocate time and funding to research forgotten texts and earn Talent Points.</p>
+              <div id="research-panel">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+            <div class="v-card">
+              <div class="card-header">TALENT TREE</div>
+              <p class="card-desc">Spend earned Talent Points to unlock unique passives and perks.</p>
+              <div id="talent-list" class="talent-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: REALM MAP -->
         <div id="tab-map" class="tab-page">
           <div class="v-card">
             <div class="card-header">WESTEROS PROVINCES & FIEFDOMS</div>
@@ -184,7 +250,7 @@
           </div>
         </div>
 
-        <!-- TAB 5: MILITARY -->
+        <!-- TAB 7: MILITARY -->
         <div id="tab-military" class="tab-page">
           <div class="v-card">
             <div class="card-header">MILITARY & RETINUE RECRUITMENT</div>
@@ -200,7 +266,7 @@
     </div>
   </div>
 
-  <!-- POP-UP MODAL UNTUK FM EVENT DECISION -->
+  <!-- POP-UP MODAL UNTUK EVENT DECISION -->
   <div id="event-modal-overlay" class="login-screen hidden">
     <div class="login-frame event-modal-frame">
       <div class="login-header">
