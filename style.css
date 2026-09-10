@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. BASE & THEMING (Europa Universalis x Football Manager Styles)
+   1. BASE & THEMING
    ========================================================================== */
 :root {
   --bg-dark: #12100e;
@@ -33,7 +33,88 @@ body {
 }
 
 /* ==========================================================================
-   2. TOP BAR (EU4 Style Top Bar)
+   2. CHARACTER CREATION MODAL
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-box {
+  background: var(--panel-bg);
+  border: 2px solid var(--gold-accent);
+  border-radius: 6px;
+  width: 500px;
+  padding: 30px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+}
+
+.modal-title {
+  font-family: var(--font-serif);
+  color: var(--gold-bright);
+  text-align: center;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
+
+.modal-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: var(--gold-accent);
+  text-transform: uppercase;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.btn-start {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  background: linear-gradient(180deg, #8b0000 0%, #4a0000 100%);
+  color: #fff;
+  border: 1px solid var(--gold-accent);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-start:hover {
+  background: linear-gradient(180deg, #a60000 0%, #660000 100%);
+  box-shadow: 0 0 10px rgba(243, 209, 124, 0.6);
+}
+
+/* ==========================================================================
+   3. TOP BAR & LAYOUT
    ========================================================================== */
 .topbar {
   background: linear-gradient(180deg, #282119 0%, #17130e 100%);
@@ -58,14 +139,14 @@ body {
 
 .resource-container {
   display: flex;
-  gap: 20px;
+  gap: 15px;
 }
 
 .resource-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   background: rgba(0, 0, 0, 0.4);
   padding: 4px 10px;
   border: 1px solid #33281c;
@@ -83,12 +164,6 @@ body {
   font-weight: bold;
 }
 
-.turn-control {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
 .btn-end-turn {
   background: linear-gradient(180deg, #8b0000 0%, #4a0000 100%);
   color: #fff;
@@ -98,7 +173,6 @@ body {
   font-weight: bold;
   cursor: pointer;
   border-radius: 3px;
-  box-shadow: 0 0 5px rgba(200, 155, 60, 0.4);
   transition: all 0.2s ease;
 }
 
@@ -107,9 +181,6 @@ body {
   box-shadow: 0 0 10px rgba(243, 209, 124, 0.8);
 }
 
-/* ==========================================================================
-   3. MAIN LAYOUT (FM Style Sidebar + Content)
-   ========================================================================== */
 .main-wrapper {
   display: flex;
   flex: 1;
@@ -130,7 +201,6 @@ body {
   align-items: center;
   padding: 12px 20px;
   color: var(--text-main);
-  text-decoration: none;
   font-size: 0.9rem;
   border-left: 3px solid transparent;
   cursor: pointer;
@@ -168,7 +238,7 @@ body {
 }
 
 /* ==========================================================================
-   4. UI COMPONENTS (FM Style Attributes Table & EU4 Log Panels)
+   4. UI PANELS & JOBS CARDS
    ========================================================================== */
 .panel {
   background: rgba(28, 25, 23, 0.85);
@@ -195,7 +265,6 @@ body {
   gap: 20px;
 }
 
-/* Character Card Header */
 .char-header-info {
   display: flex;
   gap: 15px;
@@ -213,43 +282,63 @@ body {
   font-size: 2rem;
 }
 
-#char-name {
-  color: var(--gold-bright);
-  font-family: var(--font-serif);
-}
-
-#char-title {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-
 .origin-tag {
-  margin-top: 5px;
+  margin-top: 4px;
   font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-#char-origin {
-  color: var(--gold-accent);
+/* Jobs Section */
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
 }
 
-.custom-form {
+.job-card {
+  background: rgba(15, 13, 11, 0.9);
+  border: 1px solid var(--panel-border);
+  padding: 15px;
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 10px;
 }
 
-/* FM Style Attribute Display */
+.job-card.active-job {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 8px rgba(243, 209, 124, 0.3);
+}
+
+.job-title {
+  color: var(--gold-bright);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+}
+
+.job-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.job-rewards {
+  font-size: 0.8rem;
+  color: #06d6a0;
+}
+
+.job-req {
+  font-size: 0.75rem;
+  color: #ff6b6b;
+}
+
+/* Attributes Display */
 .stat-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
   border-bottom: 1px solid rgba(68, 55, 40, 0.3);
-}
-
-.stat-name {
-  color: var(--text-main);
-  font-size: 0.9rem;
 }
 
 .stat-badge {
@@ -261,61 +350,11 @@ body {
   text-align: center;
 }
 
-/* Rating Colors (FM Style) */
 .val-low { background-color: #3a1515; color: #ff6b6b; }
 .val-mid { background-color: #3d3415; color: #ffd166; }
 .val-high { background-color: #153a1a; color: #06d6a0; }
 
-/* Interactive Map (EU4 Style Province Grid) */
-.map-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.section-desc {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-bottom: 15px;
-}
-
-.map-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  height: 100%;
-}
-
-.province-card {
-  background: rgba(15, 13, 11, 0.9);
-  border: 1px solid var(--panel-border);
-  padding: 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.province-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--gold-accent);
-}
-
-.province-owner {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-.province-income {
-  margin-top: 15px;
-  font-size: 0.8rem;
-  color: var(--gold-accent);
-}
-
-/* Event Log */
+/* Log Box */
 .log-box {
   background-color: #0d0c0a;
   border: 1px solid var(--panel-border);
@@ -333,9 +372,8 @@ body {
 }
 
 .log-time { color: var(--gold-accent); }
-.log-text { color: var(--text-main); }
 
-/* Controls */
+/* Common Inputs & Buttons */
 input, select {
   background: #17130e;
   border: 1px solid var(--panel-border);
@@ -345,18 +383,12 @@ input, select {
   font-family: inherit;
 }
 
-.btn-group {
-  display: flex;
-  gap: 10px;
-}
-
 button.btn-action {
   background: linear-gradient(180deg, #3a3024 0%, #221c15 100%);
   border: 1px solid var(--panel-border);
   color: var(--text-main);
   padding: 8px 12px;
   border-radius: 3px;
-  font-family: inherit;
   cursor: pointer;
   transition: background 0.2s;
 }
