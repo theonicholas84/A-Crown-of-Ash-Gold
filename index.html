@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Song of Ice and Fire - Iron & Lineage</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- TOPBAR: RESOURCE & TURN INFORMATION (EU4 Style) -->
+  <header class="topbar">
+    <div class="game-title">Iron & Lineage</div>
+    
+    <div class="resource-container">
+      <div class="resource-item">
+        <span class="resource-label">Gold:</span>
+        <span id="res-gold" class="resource-val">50</span>
+      </div>
+      <div class="resource-item">
+        <span class="resource-label">Prestige:</span>
+        <span id="res-prestige" class="resource-val">10</span>
+      </div>
+      <div class="resource-item">
+        <span class="resource-label">Men:</span>
+        <span id="res-men" class="resource-val">15</span>
+      </div>
+      <div class="resource-item">
+        <span class="resource-label">Date:</span>
+        <span id="res-date" class="resource-val">298 AC, Month 1</span>
+      </div>
+    </div>
+
+    <div class="turn-control">
+      <button class="btn-end-turn" onclick="game.nextTurn()">End Turn ►</button>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER: SIDEBAR + DASHBOARD CONTENT -->
+  <div class="main-wrapper">
+    
+    <!-- Sidebar Navigation (FM Style) -->
+    <nav class="sidebar">
+      <div class="nav-btn active" onclick="ui.switchTab('tab-character', event)">Character Profile</div>
+      <div class="nav-btn" onclick="ui.switchTab('tab-map', event)">Westeros Map</div>
+      <div class="nav-btn" onclick="ui.switchTab('tab-military', event)">Military & Retinue</div>
+    </nav>
+
+    <!-- Main Dynamic Content -->
+    <main class="content-area">
+
+      <!-- TAB 1: CHARACTER PROFILE (FM Style Attributes) -->
+      <div id="tab-character" class="tab-content active">
+        <div class="grid-2">
+          
+          <!-- General Overview Panel -->
+          <div class="panel">
+            <div class="panel-header">Character Overview</div>
+            <div class="char-header-info">
+              <div class="char-avatar">🛡️</div>
+              <div>
+                <h2 id="char-name">Ser Jon Rivers</h2>
+                <p id="char-title">Hedge Knight of the Riverlands</p>
+                <p class="origin-tag">Origin: <span id="char-origin">Bastard</span></p>
+              </div>
+            </div>
+
+            <div class="panel-header">Customization</div>
+            <div class="custom-form">
+              <label>Character Name:</label>
+              <input type="text" id="input-name" value="Ser Jon Rivers" onchange="game.updateName(this.value)">
+              
+              <label>Origin/Background:</label>
+              <select id="select-origin" onchange="game.updateOrigin(this.value)">
+                <option value="Bastard">Bastard of a Minor House</option>
+                <option value="Hedge Knight">Landed Hedge Knight</option>
+                <option value="Mercenary">Essos Mercenary Captain</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Attributes Panel (FM Style numeric badge) -->
+          <div class="panel">
+            <div class="panel-header">Attributes & Skills (1-20)</div>
+            <div id="attributes-list">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- History/Log Area -->
+        <div class="panel">
+          <div class="panel-header">Chronicle Log</div>
+          <div id="event-log" class="log-box">
+            <div class="log-entry">
+              <span class="log-time">[298 AC, Month 1]</span> 
+              <span class="log-text">You have set out to build your lineage in Westeros.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: WESTEROS MAP (EU4 Style Map Grid) -->
+      <div id="tab-map" class="tab-content">
+        <div class="panel map-panel">
+          <div class="panel-header">Realms & Fiefdoms</div>
+          <p class="section-desc">Select a region to manage or inspect holdings.</p>
+          
+          <div id="province-grid" class="map-grid">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: MILITARY & RETINUE -->
+      <div id="tab-military" class="tab-content">
+        <div class="panel">
+          <div class="panel-header">Retinue Management</div>
+          <p class="section-desc">Recruit sellswords and men-at-arms to increase your military presence.</p>
+          
+          <div class="btn-group">
+            <button class="btn-action" onclick="game.recruitMen(5, 20)">Recruit 5 Men (20 Gold)</button>
+            <button class="btn-action" onclick="game.recruitMen(10, 35)">Recruit 10 Men (35 Gold)</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
