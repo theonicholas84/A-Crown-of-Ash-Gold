@@ -1,498 +1,109 @@
 /* ==========================================================================
-   VICTORIAN & FOOTBALL MANAGER HYBRID THEMING
+   4. EVENT INBOX & FOOTBALL MANAGER STYLE EVENT SYSTEM
    ========================================================================== */
-:root {
-  --vic-gold-bright: #f0d285;
-  --vic-gold-mid: #c59b27;
-  --vic-gold-dark: #7a5c10;
-  
-  --vic-mahogany-dark: #0f0b08;
-  --vic-mahogany-panel: #1a1410;
-  --vic-mahogany-border: #3b2c1a;
-  
-  --fm-green-accent: #02c39a;
-  --fm-bg-glass: rgba(18, 14, 11, 0.92);
-  
-  --text-primary: #ebdcc4;
-  --text-muted: #9e8e78;
-  
-  --font-cinzel: 'Cinzel', serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: var(--vic-mahogany-dark);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  height: 100vh;
-  overflow: hidden;
-  user-select: none;
-}
-
-/* ==========================================================================
-   1. LOGIN / CREATION SCREEN (FULL OVERLAY)
-   ========================================================================== */
-.login-screen {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle, rgba(20, 15, 12, 0.95) 0%, rgba(5, 3, 2, 0.98) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.login-frame {
-  background: var(--vic-mahogany-panel);
-  border: 2px solid var(--vic-gold-mid);
-  outline: 1px solid var(--vic-gold-dark);
-  outline-offset: -6px;
-  width: 480px;
-  padding: 40px;
-  box-shadow: 0 0 35px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(197, 155, 39, 0.15);
-  border-radius: 4px;
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.victoria-crest {
-  font-size: 2.2rem;
-  margin-bottom: 5px;
-}
-
-.game-title-grand {
-  font-family: var(--font-cinzel);
-  color: var(--vic-gold-bright);
-  font-size: 1.8rem;
-  letter-spacing: 3px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-}
-
-.game-tagline {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-style: italic;
-  letter-spacing: 1px;
-}
-
-.login-form .form-group {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.login-form label {
-  font-size: 0.75rem;
-  color: var(--vic-gold-bright);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-}
-
-.form-row {
+.inbox-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 15px;
+  height: 520px;
 }
 
-input, select {
-  background: #0d0a08;
+.inbox-list {
+  background: #080604;
   border: 1px solid var(--vic-mahogany-border);
-  color: var(--text-primary);
-  padding: 10px 12px;
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
   border-radius: 3px;
-  outline: none;
-  transition: border 0.2s;
-}
-
-input:focus, select:focus {
-  border-color: var(--vic-gold-bright);
-}
-
-.btn-login {
-  width: 100%;
-  margin-top: 15px;
-  padding: 14px;
-  background: linear-gradient(180deg, #6b1d1d 0%, #3b0a0a 100%);
-  border: 1px solid var(--vic-gold-mid);
-  color: var(--vic-gold-bright);
-  font-family: var(--font-cinzel);
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 1px;
-  border-radius: 3px;
-  transition: all 0.2s;
-}
-
-.btn-login:hover {
-  background: linear-gradient(180deg, #8c2424 0%, #4f0e0e 100%);
-  box-shadow: 0 0 12px rgba(240, 210, 133, 0.4);
-}
-
-/* Hidden Utility */
-.hidden { display: none !important; }
-
-/* ==========================================================================
-   2. MAIN GAME INTERFACE (FOOTBALL MANAGER STYLE)
-   ========================================================================== */
-.game-interface {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-.topbar {
-  background: linear-gradient(180deg, #1f1813 0%, #120e0b 100%);
-  border-bottom: 2px solid var(--vic-mahogany-border);
-  height: 55px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.brand-title {
-  font-family: var(--font-cinzel);
-  color: var(--vic-gold-bright);
-  font-weight: 700;
-  letter-spacing: 1px;
-  font-size: 0.95rem;
-}
-
-.fm-stat-bar {
-  display: flex;
-  gap: 12px;
-}
-
-.stat-pill {
-  background: #0b0806;
-  border: 1px solid var(--vic-mahogany-border);
-  padding: 4px 12px;
-  border-radius: 3px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 90px;
-}
-
-.stat-lbl {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-val {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.gold-color { color: var(--vic-gold-bright); }
-.highlight-color { color: var(--fm-green-accent); }
-
-.btn-turn {
-  background: linear-gradient(180deg, #0f5238 0%, #062b1d 100%);
-  border: 1px solid var(--fm-green-accent);
-  color: #fff;
-  padding: 8px 18px;
-  font-family: var(--font-cinzel);
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 3px;
-  transition: all 0.2s;
-}
-
-.btn-turn:hover {
-  background: linear-gradient(180deg, #15734e 0%, #0a402c 100%);
-  box-shadow: 0 0 10px rgba(2, 195, 154, 0.4);
-}
-
-/* Layout Architecture */
-.main-layout {
-  display: flex;
-  flex: 1;
-  height: calc(100vh - 55px);
-}
-
-.sidebar {
-  width: 220px;
-  background: var(--vic-mahogany-panel);
-  border-right: 1px solid var(--vic-mahogany-border);
-  padding-top: 15px;
-}
-
-.nav-section-title {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  padding: 0 20px 8px;
-  letter-spacing: 1px;
-}
-
-.nav-item {
-  padding: 12px 20px;
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  border-left: 3px solid transparent;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.15s;
-}
-
-.nav-item:hover {
-  background: rgba(197, 155, 39, 0.08);
-  color: var(--vic-gold-bright);
-}
-
-.nav-item.active {
-  background: rgba(197, 155, 39, 0.15);
-  border-left-color: var(--vic-gold-bright);
-  color: var(--vic-gold-bright);
-  font-weight: 600;
-}
-
-.viewport {
-  flex: 1;
-  padding: 20px;
   overflow-y: auto;
-  background: radial-gradient(circle at top center, #17120e 0%, #0a0705 100%);
-}
-
-.tab-page {
-  display: none;
+  display: flex;
   flex-direction: column;
-  gap: 18px;
 }
 
-.tab-page.active {
-  display: flex;
+.inbox-item {
+  padding: 12px;
+  border-bottom: 1px solid rgba(59, 44, 26, 0.4);
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-/* ==========================================================================
-   3. VICTORIAN DASHBOARD CARDS & TABLES
-   ========================================================================== */
-.v-card {
-  background: var(--fm-bg-glass);
-  border: 1px solid var(--vic-mahogany-border);
-  border-radius: 4px;
-  padding: 18px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+.inbox-item:hover {
+  background: rgba(197, 155, 39, 0.08);
 }
 
-.card-header {
-  font-family: var(--font-cinzel);
-  font-size: 0.85rem;
-  color: var(--vic-gold-bright);
-  border-bottom: 1px solid var(--vic-mahogany-border);
-  padding-bottom: 8px;
-  margin-bottom: 15px;
-  letter-spacing: 1px;
+.inbox-item.unread {
+  border-left: 3px solid var(--fm-green-accent);
+  background: rgba(2, 195, 154, 0.05);
 }
 
-.card-desc {
-  font-size: 0.8rem;
+.inbox-item.selected {
+  background: rgba(197, 155, 39, 0.15);
+  border-left: 3px solid var(--vic-gold-bright);
+}
+
+.inbox-item-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.inbox-item-date {
+  font-size: 0.7rem;
   color: var(--text-muted);
-  margin-bottom: 15px;
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-/* Profile Display */
-.profile-body {
-  display: flex;
-  gap: 20px;
-}
-
-.avatar-frame {
-  width: 90px;
-  height: 90px;
+.inbox-viewer {
   background: #0d0a08;
-  border: 1px solid var(--vic-gold-mid);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
+  border: 1px solid var(--vic-mahogany-border);
   border-radius: 3px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.char-title-name {
+.event-header-title {
   font-family: var(--font-cinzel);
   color: var(--vic-gold-bright);
   font-size: 1.2rem;
-}
-
-.char-subtitle {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-}
-
-.char-meta-grid {
-  font-size: 0.8rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.char-meta-grid span { color: var(--text-muted); }
-.char-meta-grid strong { color: var(--text-primary); }
-
-/* FM Attributes Ratings */
-.attributes-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.attr-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #0d0a08;
-  padding: 6px 12px;
-  border: 1px solid rgba(59, 44, 26, 0.4);
-  border-radius: 3px;
-}
-
-.attr-name {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: var(--text-primary);
-}
-
-.attr-badge {
-  font-weight: 700;
-  font-size: 0.8rem;
-  padding: 2px 8px;
-  border-radius: 3px;
-  min-width: 28px;
-  text-align: center;
-}
-
-/* FM Style Attribute Colors */
-.badge-low { background: #3d1414; color: #ff6b6b; }
-.badge-mid { background: #3d3114; color: #f0c961; }
-.badge-high { background: #123d21; color: #02c39a; }
-
-/* FM Log Box */
-.fm-log-box {
-  background: #080604;
-  border: 1px solid var(--vic-mahogany-border);
-  height: 150px;
-  overflow-y: auto;
-  padding: 10px;
-  font-family: monospace;
-  font-size: 0.8rem;
-}
-
-.log-item {
   margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px dashed rgba(59, 44, 26, 0.4);
 }
 
-.log-date { color: var(--vic-gold-mid); }
-
-/* Jobs Matrix */
-.jobs-table-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+.event-body-text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin-top: 15px;
 }
 
-.job-card {
-  background: #0d0a08;
-  border: 1px solid var(--vic-mahogany-border);
-  padding: 15px;
-  border-radius: 3px;
+.event-choices-container {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 20px;
 }
 
-.job-card.active-job {
-  border-color: var(--fm-green-accent);
-  box-shadow: 0 0 8px rgba(2, 195, 154, 0.2);
-}
-
-.job-name {
-  font-family: var(--font-cinzel);
-  color: var(--vic-gold-bright);
-  font-size: 0.95rem;
-}
-
-.job-desc {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.job-perks {
-  font-size: 0.75rem;
-  color: var(--fm-green-accent);
-}
-
-.v-btn {
+.btn-choice {
   background: linear-gradient(180deg, #2b2015 0%, #17110a 100%);
-  border: 1px solid var(--vic-mahogany-border);
-  color: var(--text-primary);
-  padding: 8px 12px;
-  font-size: 0.8rem;
+  border: 1px solid var(--vic-gold-mid);
+  color: var(--vic-gold-bright);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  text-align: left;
   cursor: pointer;
   border-radius: 3px;
   transition: all 0.2s;
 }
 
-.v-btn:hover:not(:disabled) {
-  border-color: var(--vic-gold-mid);
-  color: var(--vic-gold-bright);
+.btn-choice:hover {
+  background: linear-gradient(180deg, #423221 0%, #241a0f 100%);
+  box-shadow: 0 0 8px rgba(240, 210, 133, 0.3);
 }
 
-.v-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Map Grid */
-.province-matrix {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.province-card {
-  background: #0d0a08;
-  border: 1px solid var(--vic-mahogany-border);
-  padding: 12px;
-  border-radius: 3px;
-}
-
-.action-panel {
-  display: flex;
-  gap: 10px;
+.inbox-badge {
+  background: var(--fm-green-accent);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+  margin-left: auto;
 }
