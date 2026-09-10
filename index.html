@@ -131,6 +131,9 @@
         <div class="nav-item" onclick="ui.switchTab('tab-houses', event)">
           <span class="nav-icon">👑</span> Tawaran Great Houses
         </div>
+        <div class="nav-item" onclick="ui.switchTab('tab-vassal', event)">
+          <span class="nav-icon">🛡️</span> Trah & House Bawahan
+        </div>
         <div class="nav-item" onclick="ui.switchTab('tab-jobs', event)">
           <span class="nav-icon">📜</span> Kontrak & Pangkat
         </div>
@@ -220,8 +223,17 @@
         <div id="tab-houses" class="tab-page">
           <div class="v-card">
             <div class="card-header">TAWARAN DARI GREAT HOUSES WESTEROS</div>
-            <p class="card-desc">Semakin tinggi Prestige dan Reputasi Anda, semakin banyak House Noble yang menawarkan tawaran pengabdian dan alur cerita khusus.</p>
+            <p class="card-desc">Jika Anda mengabdi kepada salah satu Lord, Anda otomatis berkarier sebagai Ksatria Setia (House Knight) mereka.</p>
             <div id="noble-offers-list" class="jobs-table-grid"></div>
+          </div>
+        </div>
+
+        <!-- TAB BARU: HOUSE BAWAHAN / VASSALAGE -->
+        <div id="tab-vassal" class="tab-page">
+          <div class="v-card">
+            <div class="card-header">PENDIRIAN HOUSE BAWAHAN (VASSAL HOUSE)</div>
+            <p class="card-desc">Dapatkan persetujuan dari High Lord Anda untuk mendirikan House Kebangsawanan baru di bawah panji mereka.</p>
+            <div id="vassal-house-panel"></div>
           </div>
         </div>
 
