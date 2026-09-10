@@ -14,6 +14,10 @@
   --fm-red-accent: #e53e3e;
   --fm-blue-accent: #3182ce;
   --fm-bg-glass: rgba(18, 14, 11, 0.92);
+
+  --essos-purple: #7c3aed;
+  --essos-purple-dark: #2e1065;
+  --essos-teal: #14b8a6;
   
   --text-primary: #ebdcc4;
   --text-muted: #9e8e78;
@@ -710,4 +714,175 @@ input:focus, select:focus {
   text-align: left;
   padding: 12px 15px;
   line-height: 1.3;
+}
+
+/* ==========================================================================
+   6. UI POLISH — SIDEBAR GROUPING, SCROLLBARS, TRANSITIONS
+   ========================================================================== */
+.sidebar {
+  gap: 2px;
+}
+
+.nav-section-title {
+  margin-top: 14px;
+  font-weight: 700;
+  color: var(--vic-gold-dark);
+  border-bottom: 1px dashed var(--vic-mahogany-border);
+  padding-bottom: 6px;
+  margin-left: 18px;
+  margin-right: 18px;
+}
+
+.nav-section-title:first-child {
+  margin-top: 0;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-item.active::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--vic-gold-bright);
+  box-shadow: 0 0 6px var(--vic-gold-bright);
+}
+
+.location-pill .stat-val { color: var(--essos-teal); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #0a0705; }
+::-webkit-scrollbar-thumb { background: var(--vic-mahogany-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--vic-gold-dark); }
+
+.v-btn { position: relative; overflow: hidden; }
+
+.v-card {
+  transition: box-shadow 0.25s ease;
+}
+
+/* ==========================================================================
+   7. TRAVEL SYSTEM (WESTEROS & ESSOS)
+   ========================================================================== */
+.travel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.location-card {
+  background: #0d0a08;
+  border: 1px solid var(--vic-mahogany-border);
+  border-radius: 4px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.location-card:hover {
+  border-color: var(--vic-gold-mid);
+}
+
+.location-card.current-location {
+  border-color: var(--fm-green-accent);
+  box-shadow: 0 0 10px rgba(2, 195, 154, 0.25);
+}
+
+.location-name {
+  font-family: var(--font-cinzel);
+  color: var(--vic-gold-bright);
+  font-size: 0.92rem;
+}
+
+.location-owner {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.location-meta {
+  font-size: 0.72rem;
+  color: var(--fm-blue-accent);
+}
+
+.here-tag {
+  font-size: 0.68rem;
+  color: var(--fm-green-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.essos-card {
+  border-color: var(--essos-purple);
+  box-shadow: 0 0 14px rgba(124, 58, 237, 0.12);
+}
+
+.essos-card .card-header {
+  color: #c4b5fd;
+  border-bottom-color: var(--essos-purple-dark);
+}
+
+.essos-card .location-card {
+  border-color: #3b1d63;
+}
+
+.essos-card .location-card:hover {
+  border-color: var(--essos-purple);
+}
+
+.essos-card .location-name {
+  color: #c4b5fd;
+}
+
+.travel-status-active {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0d0a08;
+  border: 1px solid var(--vic-gold-mid);
+  padding: 14px;
+  border-radius: 3px;
+}
+
+/* House / Lord campaign & war call-to-arms banner */
+.campaign-banner {
+  background: linear-gradient(180deg, #2a0a0a 0%, #150404 100%);
+  border: 1px solid var(--fm-red-accent);
+  color: #ffdada;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+/* Shop category grouping */
+.shop-category-title {
+  font-family: var(--font-cinzel);
+  color: var(--vic-gold-mid);
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 18px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--vic-mahogany-border);
+}
+
+.shop-category-title:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 1200px) {
+  .travel-grid { grid-template-columns: repeat(2, 1fr); }
 }
