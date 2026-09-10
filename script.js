@@ -12,7 +12,7 @@ const state = {
     title: "Unlanded Wanderer",
     health: 100,
     maxHealth: 100,
-    hunger: 0, // 0 = kenyang, 100 = kelaparan
+    hunger: 0,
     gold: 30,
     prestige: 0,
     reputation: 0,
@@ -21,9 +21,11 @@ const state = {
     talentPoints: 0,
     currentJob: null,
     activeNobleHouse: null,
-    vassalHouseName: null, // Jika sudah diizinkan mendirikan House Baru
+    vassalHouseName: null,
     jobRankIndex: 0,
     jobExp: 0,
+    currentLocation: "winterfell",
+    continent: "westeros",
     stats: {
       combat: 5,
       tactics: 5,
@@ -44,82 +46,73 @@ const state = {
     progress: 0,
     totalMonths: 0
   },
+  travel: {
+    inProgress: false,
+    destinationId: null,
+    destContinent: null,
+    monthsLeft: 0,
+    goingHome: false
+  },
   inbox: [],
   activeEvent: null,
 
-  // NOBLE HOUSES & QUEST LINES
+  // NOBLE HOUSES & QUEST LINES (Westeros Great Houses + Daenerys in Essos)
   nobleHouses: [
     {
-      id: "stark",
-      name: "House Stark",
-      region: "The North",
-      sigil: "🐺 Direwolf",
-      motto: "Winter is Coming",
-      reqPrestige: 5,
-      reqReputation: 10,
-      titleOffer: "Sworn Shield of Winterfell",
-      monthlyPay: 35,
+      id: "stark", name: "House Stark", region: "The North", continent: "westeros",
+      sigil: "🐺 Direwolf", motto: "Winter is Coming",
+      reqPrestige: 5, reqReputation: 10,
+      titleOffer: "Sworn Shield of Winterfell", monthlyPay: 35,
       story: "Membantu Lord Eddard Stark menjaga kedamaian di Utara dan bertempur dalam perang menghadapi musim dingin."
     },
     {
-      id: "lannister",
-      name: "House Lannister",
-      region: "The Westerlands",
-      sigil: "🦁 Lion",
-      motto: "Hear Me Roar!",
-      reqPrestige: 8,
-      reqReputation: -5,
-      titleOffer: "Lannister Household Captain",
-      monthlyPay: 60,
+      id: "lannister", name: "House Lannister", region: "The Westerlands", continent: "westeros",
+      sigil: "🦁 Lion", motto: "Hear Me Roar!",
+      reqPrestige: 8, reqReputation: -5,
+      titleOffer: "Lannister Household Captain", monthlyPay: 60,
       story: "Mengabdi pada House Lannister dalam mengamankan tambang emas Casterly Rock dan membiayai pundi-pundi kerajaan."
     },
     {
-      id: "velaryon",
-      name: "House Velaryon",
-      region: "The Crownlands",
-      sigil: "🐉 Sea Seahorse",
-      motto: "The Old, the True, the Brave",
-      reqPrestige: 6,
-      reqReputation: 5,
-      titleOffer: "High Tide Fleet Warden",
-      monthlyPay: 40,
+      id: "velaryon", name: "House Velaryon", region: "The Crownlands", continent: "westeros",
+      sigil: "🐉 Sea Seahorse", motto: "The Old, the True, the Brave",
+      reqPrestige: 6, reqReputation: 5,
+      titleOffer: "High Tide Fleet Warden", monthlyPay: 40,
       story: "Memimpin armada kapal laut Driftmark dan mengamankan jalur perdagangan Gullet dari bajak laut Essos."
     },
     {
-      id: "baratheon",
-      name: "House Baratheon",
-      region: "The Crownlands",
-      sigil: "👑 Crowned Stag",
-      motto: "Ours is the Fury",
-      reqPrestige: 10,
-      reqReputation: 15,
-      titleOffer: "Royal Knight of the Realm",
-      monthlyPay: 55,
+      id: "baratheon", name: "House Baratheon", region: "The Crownlands", continent: "westeros",
+      sigil: "👑 Crowned Stag", motto: "Ours is the Fury",
+      reqPrestige: 10, reqReputation: 15,
+      titleOffer: "Royal Knight of the Realm", monthlyPay: 55,
       story: "Melayani House Baratheon dalam turnamen kerajaan dan mengamankan kekuasaan King's Landing."
     },
     {
-      id: "martell",
-      name: "House Martell",
-      region: "Dorne",
-      sigil: "☀️ Red Sun and Spear",
-      motto: "Unbowed, Unbroken, Unbent",
-      reqPrestige: 7,
-      reqReputation: 5,
-      titleOffer: "Sunspear Shadow Guard",
-      monthlyPay: 45,
+      id: "martell", name: "House Martell", region: "Dorne", continent: "westeros",
+      sigil: "☀️ Red Sun and Spear", motto: "Unbowed, Unbroken, Unbent",
+      reqPrestige: 7, reqReputation: 5,
+      titleOffer: "Sunspear Shadow Guard", monthlyPay: 45,
       story: "Membantu Prince Doran Martell dalam intrik politik rahasia membalaskan dendam kematian Elia Martell."
     },
     {
-      id: "tyrell",
-      name: "House Tyrell",
-      region: "The Reach",
-      sigil: "🌹 Golden Rose",
-      motto: "Growing Strong",
-      reqPrestige: 6,
-      reqReputation: 8,
-      titleOffer: "Highgarden Grain Marshal",
-      monthlyPay: 50,
+      id: "tyrell", name: "House Tyrell", region: "The Reach", continent: "westeros",
+      sigil: "🌹 Golden Rose", motto: "Growing Strong",
+      reqPrestige: 6, reqReputation: 8,
+      titleOffer: "Highgarden Grain Marshal", monthlyPay: 50,
       story: "Mengelola suplai pangan dan aliansi politik House Tyrell dengan kekuatan kekayaan panen Highgarden."
+    },
+    {
+      id: "greyjoy", name: "House Greyjoy", region: "The Iron Islands", continent: "westeros",
+      sigil: "🐙 Kraken", motto: "We Do Not Sow",
+      reqPrestige: 6, reqReputation: -8,
+      titleOffer: "Ironborn Reaver Captain", monthlyPay: 38,
+      story: "Ikut dalam tradisi Ironborn merampas dan berlayar bersama armada Pyke demi membayar harga besi."
+    },
+    {
+      id: "targaryen", name: "Daenerys Targaryen", region: "Essos (Slaver's Bay)", continent: "essos",
+      sigil: "🐲 Three-Headed Dragon", motto: "Fire and Blood",
+      reqPrestige: 3, reqReputation: 0,
+      titleOffer: "Sworn Sword of the Queen Across the Sea", monthlyPay: 45,
+      story: "Mengabdi pada Daenerys Targaryen, Ibu Naga, dalam misinya membebaskan kota-kota budak di Essos dan merebut kembali Iron Throne."
     }
   ],
 
@@ -139,19 +132,18 @@ const state = {
   ],
 
   shopItems: [
-    { id: "bread", name: "Roti Garam & Ransum", cost: 5, desc: "Memulihkan 30 Hunger.", type: "food", val: 30 },
-    { id: "wine", name: "Anggur Emas Arbor", cost: 12, desc: "Memulihkan 50 Hunger & +1 Prestige.", type: "food_luxury", val: 50 },
-    { id: "medicine", name: "Ramuan Maester", cost: 15, desc: "Memulihkan 40 Health.", type: "heal", val: 40 },
-    { id: "iron_sword", name: "Pedang Besi Tempa", cost: 30, desc: "Menambah +1 Combat permanen.", type: "equip", stat: "combat", val: 1 },
-    { id: "castle_sword", name: "Castle-Forged Steel Sword", cost: 75, desc: "Menambah +3 Combat permanen.", type: "equip", stat: "combat", val: 3 },
-    { id: "valyrian_sword", name: "Replika Pedang Valyrian", cost: 200, desc: "Menambah +5 Combat & +2 Prestige.", type: "equip_legendary", stat: "combat", val: 5, bonusPrestige: 2 },
-    { id: "padded_tunic", name: "Tunik Kain Tebal Padded", cost: 20, desc: "Armor kain dasar. Menambah +1 Tactics.", type: "equip", stat: "tactics", val: 1 },
-    { id: "silk_robe", name: "Jubah Sutra Highgarden", cost: 60, desc: "Armor kain mewah. Menambah +2 Diplomacy & +1 Prestige.", type: "equip_legendary", stat: "diplomacy", val: 2, bonusPrestige: 1 },
-    { id: "chainmail", name: "Baju Zirah Rantai (Chainmail)", cost: 50, desc: "Armor besi sedang. Menambah +2 Combat & +10 Max Health.", type: "equip_health", stat: "combat", val: 2, bonusHealth: 10 },
-    { id: "plate_armor", name: "Armor Pelat Besi Utuh (Full Plate)", cost: 150, desc: "Armor besi berat. Menambah +4 Combat, +2 Tactics, & +20 Max Health.", type: "equip_heavy", stat: "combat", val: 4, bonusTactics: 2, bonusHealth: 20 }
+    { id: "bread", name: "Roti Garam & Ransum", cost: 5, desc: "Memulihkan 30 Hunger.", type: "food", val: 30, category: "Makanan & Minuman" },
+    { id: "wine", name: "Anggur Emas Arbor", cost: 12, desc: "Memulihkan 50 Hunger & +1 Prestige.", type: "food_luxury", val: 50, category: "Makanan & Minuman" },
+    { id: "medicine", name: "Ramuan Maester", cost: 15, desc: "Memulihkan 40 Health.", type: "heal", val: 40, category: "Makanan & Minuman" },
+    { id: "iron_sword", name: "Pedang Besi Tempa", cost: 30, desc: "Menambah +1 Combat permanen.", type: "equip", stat: "combat", val: 1, category: "Senjata" },
+    { id: "castle_sword", name: "Castle-Forged Steel Sword", cost: 75, desc: "Menambah +3 Combat permanen.", type: "equip", stat: "combat", val: 3, category: "Senjata" },
+    { id: "valyrian_sword", name: "Replika Pedang Valyrian", cost: 200, desc: "Menambah +5 Combat & +2 Prestige.", type: "equip_legendary", stat: "combat", val: 5, bonusPrestige: 2, category: "Senjata" },
+    { id: "padded_tunic", name: "Tunik Kain Tebal Padded", cost: 20, desc: "Armor kain dasar. Menambah +1 Tactics.", type: "equip", stat: "tactics", val: 1, category: "Zirah & Armor" },
+    { id: "silk_robe", name: "Jubah Sutra Highgarden", cost: 60, desc: "Armor kain mewah. Menambah +2 Diplomacy & +1 Prestige.", type: "equip_legendary", stat: "diplomacy", val: 2, bonusPrestige: 1, category: "Zirah & Armor" },
+    { id: "chainmail", name: "Baju Zirah Rantai (Chainmail)", cost: 50, desc: "Armor besi sedang. Menambah +2 Combat & +10 Max Health.", type: "equip_health", stat: "combat", val: 2, bonusHealth: 10, category: "Zirah & Armor" },
+    { id: "plate_armor", name: "Armor Pelat Besi Utuh (Full Plate)", cost: 150, desc: "Armor besi berat. Menambah +4 Combat, +2 Tactics, & +20 Max Health.", type: "equip_heavy", stat: "combat", val: 4, bonusTactics: 2, bonusHealth: 20, category: "Zirah & Armor" }
   ],
 
-  // JOBS DATABASE (Termasuk Job Khusus Mengabdi sebagai Ksatria)
   jobs: [
     {
       id: "knight_vassal",
@@ -167,11 +159,9 @@ const state = {
       ]
     },
     {
-      id: "guard",
-      title: "City Watch (Gold Cloaks)",
+      id: "guard", title: "City Watch (Gold Cloaks)",
       desc: "Menjaga keamanan distrik kota dan menegakkan hukum.",
-      req: { stat: "combat", val: 5 },
-      statBoost: "combat",
+      req: { stat: "combat", val: 5 }, statBoost: "combat",
       ranks: [
         { name: "Prajurit Rekrutan", income: 10, expReq: 100 },
         { name: "Patrol Officer", income: 18, expReq: 250 },
@@ -180,11 +170,9 @@ const state = {
       ]
     },
     {
-      id: "blacksmith",
-      title: "Pandai Besi Kastil",
+      id: "blacksmith", title: "Pandai Besi Kastil",
       desc: "Menempa pedang dan baju zirah untuk kebutuhan garnisun perang.",
-      req: { stat: "combat", val: 4 },
-      statBoost: "combat",
+      req: { stat: "combat", val: 4 }, statBoost: "combat",
       ranks: [
         { name: "Magang Pandai Besi", income: 12, expReq: 100 },
         { name: "Penempa Besi Utul", income: 22, expReq: 250 },
@@ -192,11 +180,9 @@ const state = {
       ]
     },
     {
-      id: "scribe",
-      title: "Administrasi Kastil",
+      id: "scribe", title: "Administrasi Kastil",
       desc: "Mengelola pembukuan, pajak, dan cadangan gandum High Lord.",
-      req: { stat: "stewardship", val: 5 },
-      statBoost: "stewardship",
+      req: { stat: "stewardship", val: 5 }, statBoost: "stewardship",
       ranks: [
         { name: "Clerk Muda", income: 15, expReq: 120 },
         { name: "High Steward", income: 28, expReq: 300 },
@@ -204,11 +190,9 @@ const state = {
       ]
     },
     {
-      id: "informant",
-      title: "Jaringan Bayangan",
+      id: "informant", title: "Jaringan Bayangan",
       desc: "Menyusup ke kedai dan mengumpulkan rahasia politik.",
-      req: { stat: "intrigue", val: 6 },
-      statBoost: "intrigue",
+      req: { stat: "intrigue", val: 6 }, statBoost: "intrigue",
       ranks: [
         { name: "Informan Jalanan", income: 14, expReq: 110 },
         { name: "Agen Mata-Mata", income: 26, expReq: 280 },
@@ -216,11 +200,9 @@ const state = {
       ]
     },
     {
-      id: "mercenary",
-      title: "Tentara Bayaran (Free Company)",
+      id: "mercenary", title: "Tentara Bayaran (Free Company)",
       desc: "Memimpin pengawalan bersenjata di seluruh Westeros.",
-      req: { stat: "combat", val: 8 },
-      statBoost: "tactics",
+      req: { stat: "combat", val: 8 }, statBoost: "tactics",
       ranks: [
         { name: "Prajurit Sellsword", income: 20, expReq: 150 },
         { name: "Letnan Kapten", income: 40, expReq: 350 },
@@ -229,16 +211,40 @@ const state = {
     }
   ],
 
+  // WESTEROS LOCATIONS (dipakai juga untuk province matrix & travel)
   provinces: [
-    { id: 1, name: "Winterfell", owner: "House Stark (Lord Eddard)", tax: 20 },
-    { id: 2, name: "Casterly Rock", owner: "House Lannister (Lord Tywin)", tax: 35 },
-    { id: 3, name: "Riverrun", owner: "House Tully (Lord Hoster)", tax: 15 },
-    { id: 4, name: "The Eyrie", owner: "House Arryn (Lord Jon)", tax: 12 },
-    { id: 5, name: "Highgarden", owner: "House Tyrell (Lord Mace)", tax: 30 },
-    { id: 6, name: "King's Landing", owner: "The Crown (King Robert Baratheon I)", tax: 40 },
-    { id: 7, name: "Sunspear", owner: "House Martell (Prince Doran)", tax: 22 },
-    { id: 8, name: "Driftmark", owner: "House Velaryon (Lord Monford)", tax: 25 }
-  ]
+    { id: "winterfell", name: "Winterfell", owner: "House Stark (Lord Eddard)", region: "The North", tax: 20 },
+    { id: "pyke", name: "Pyke", owner: "House Greyjoy (Lord Balon)", region: "The Iron Islands", tax: 14 },
+    { id: "casterly_rock", name: "Casterly Rock", owner: "House Lannister (Lord Tywin)", region: "The Westerlands", tax: 35 },
+    { id: "riverrun", name: "Riverrun", owner: "House Tully (Lord Hoster)", region: "The Riverlands", tax: 15 },
+    { id: "eyrie", name: "The Eyrie", owner: "House Arryn (Lady Lysa)", region: "The Vale", tax: 12 },
+    { id: "highgarden", name: "Highgarden", owner: "House Tyrell (Lord Mace)", region: "The Reach", tax: 30 },
+    { id: "kings_landing", name: "King's Landing", owner: "The Crown (King Robert Baratheon I)", region: "The Crownlands", tax: 40 },
+    { id: "sunspear", name: "Sunspear", owner: "House Martell (Prince Doran)", region: "Dorne", tax: 22 },
+    { id: "driftmark", name: "Driftmark", owner: "House Velaryon (Lord Monford)", region: "The Crownlands", tax: 25 }
+  ],
+
+  // ESSOS LOCATIONS
+  essosLocations: [
+    { id: "pentos", name: "Pentos", desc: "Kota pelabuhan Free City tempat pengasingan Targaryen bersinggah." },
+    { id: "braavos", name: "Braavos", desc: "Kota kanal dengan Titan penjaga dan kekuatan Iron Bank." },
+    { id: "volantis", name: "Volantis", desc: "Kota tertua Free Cities yang dikuasai kaum bangsawan pedagang budak." },
+    { id: "vaes_dothrak", name: "Vaes Dothrak", desc: "Kota suci para Khalasar Dothraki di lautan rumput." },
+    { id: "astapor", name: "Astapor", desc: "Kota penghasil pasukan budak Unsullied yang tak kenal takut." },
+    { id: "yunkai", name: "Yunkai", desc: "Kota kuning para pedagang budak kenikmatan." },
+    { id: "meereen", name: "Meereen", desc: "Kota budak terbesar di Teluk Budak, kelak menjadi ibu kota Daenerys." },
+    { id: "qarth", name: "Qarth", desc: "Kota pedagang kaya raya di gerbang Laut Jade." }
+  ],
+
+  homeRegionToLocation: {
+    "The North": "winterfell",
+    "The Westerlands": "casterly_rock",
+    "The Crownlands": "kings_landing",
+    "The Reach": "highgarden",
+    "Dorne": "sunspear",
+    "The Riverlands": "riverrun",
+    "The Iron Islands": "pyke"
+  }
 };
 
 /* --------------------------------------------------------------------------
@@ -247,23 +253,25 @@ const state = {
 const jobEvents = {
   guard: [
     {
-      id: "g1",
-      title: "Sogokan di Flea Bottom",
-      type: "Event Pekerjaan",
-      sender: "Patroli City Watch",
+      id: "g1", title: "Sogokan di Flea Bottom", type: "Event Pekerjaan", sender: "Patroli City Watch",
       desc: "Seorang penyelundup anggur Lysene menawarkan 20 Gold agar Anda pura-pura tidak melihat barang ilegalnya.",
       choices: [
         { text: "Terima sogokan (+20 Gold, -2 Prestige, -5 Reputasi)", effect: (p) => { p.gold += 20; p.prestige -= 2; p.reputation -= 5; return "Anda mengantongi emas dan membiarkan penyelundup lolos."; } },
         { text: "Tangkap atas nama Raja (+3 Prestige, +5 Reputasi, +15 EXP)", effect: (p) => { p.prestige += 3; p.reputation += 5; game.addJobExp(15); return "Penyelundup diseret ke penjara ibukota."; } }
       ]
+    },
+    {
+      id: "g2", title: "Perkelahian Kedai Minum", type: "Event Pekerjaan", sender: "Penjaga Distrik",
+      desc: "Dua pedagang mabuk berkelahi hebat di kedai, mengancam memecahkan barang dagangan warga sekitar.",
+      choices: [
+        { text: "Lerai dengan kekuatan (+1 Combat, +10 EXP)", effect: (p) => { p.stats.combat += 1; game.addJobExp(10); return "Anda melerai perkelahian dengan tegas."; } },
+        { text: "Negosiasikan damai (+1 Diplomacy, +10 EXP)", effect: (p) => { p.stats.diplomacy += 1; game.addJobExp(10); return "Kedua pedagang berdamai berkat kata-kata Anda."; } }
+      ]
     }
   ],
   blacksmith: [
     {
-      id: "bm1",
-      title: "Besi Pedang Bangsawan",
-      type: "Event Pekerjaan",
-      sender: "Garnisun Bengkel",
+      id: "bm1", title: "Besi Pedang Bangsawan", type: "Event Pekerjaan", sender: "Garnisun Bengkel",
       desc: "Seorang ksatria menuntut pedangnya ditempa ulang secara terburu-buru dan memberi tekanan pada Anda.",
       choices: [
         { text: "Kerjakan dengan teliti (+1 Combat, +20 EXP)", effect: (p) => { p.stats.combat += 1; game.addJobExp(20); return "Pedang buatan Anda dipuji sangat tajam!"; } },
@@ -273,10 +281,7 @@ const jobEvents = {
   ],
   scribe: [
     {
-      id: "s1",
-      title: "Kecurangan Pajak Gandum",
-      type: "Event Pekerjaan",
-      sender: "Kantor Audit High Lord",
+      id: "s1", title: "Kecurangan Pajak Gandum", type: "Event Pekerjaan", sender: "Kantor Audit High Lord",
       desc: "Audit pembukuan panen menemukan manipulasi laporan oleh juru tulis lokal yang menyembunyikan 30 Gold.",
       choices: [
         { text: "Laporkan kecurangan (+5 Prestige, +5 Reputasi, +20 EXP)", effect: (p) => { p.prestige += 5; p.reputation += 5; game.addJobExp(20); return "Lord memberi Anda penghargaan atas kejujuran."; } },
@@ -284,79 +289,225 @@ const jobEvents = {
       ]
     }
   ],
+  informant: [
+    {
+      id: "in1", title: "Rahasia dari Kedai Pelabuhan", type: "Event Pekerjaan", sender: "Kontak Bayangan",
+      desc: "Anda mendengar bisikan tentang rencana pemindahan pasukan rahasia salah satu House Agung.",
+      choices: [
+        { text: "Jual info ke pihak tertinggi (+25 Gold, -3 Reputasi)", effect: (p) => { p.gold += 25; p.reputation -= 3; return "Emas berpindah tangan dalam kegelapan lorong kota."; } },
+        { text: "Simpan untuk Lord Anda (+2 Intrigue, +15 EXP)", effect: (p) => { p.stats.intrigue += 2; game.addJobExp(15); return "Informasi berharga tersimpan rapi untuk kebutuhan mendesak."; } }
+      ]
+    }
+  ],
+  mercenary: [
+    {
+      id: "mc1", title: "Kontrak Pengawalan Karavan", type: "Event Pekerjaan", sender: "Free Company",
+      desc: "Karavan pedagang membutuhkan pengawalan melewati jalur rawan perampok di Kingsroad.",
+      choices: [
+        { text: "Terima dan berjaga penuh (+2 Combat, +20 EXP)", effect: (p) => { p.stats.combat += 2; game.addJobExp(20); return "Karavan tiba dengan selamat berkat kewaspadaan Anda."; } },
+        { text: "Ambil jalan pintas berisiko (+30 Gold, -10 Health)", effect: (p) => { p.gold += 30; p.health = Math.max(1, p.health - 10); return "Jalan pintas berhasil namun luka tergores di lengan Anda."; } }
+      ]
+    }
+  ],
   knight_vassal: [
     {
-      id: "kv1",
-      title: "Insiden Bandit di Desa Lord",
-      type: "Event Ksatria",
-      sender: "Utusan Desa Lord",
+      id: "kv1", title: "Insiden Bandit di Desa Lord", type: "Event Ksatria", sender: "Utusan Desa Lord",
       desc: "Kelompok penjarah menyerang batas tanah milik Lord Anda. Sebagai ksatria sworn, Anda diminta memimpin pasukan penumpasan.",
       choices: [
         { text: "Pimpin serangan depan (+10 Prestige, +30 EXP, -10 Health)", effect: (p) => { p.prestige += 10; game.addJobExp(30); p.health = Math.max(1, p.health - 10); return "Anda menang dalam duel pimpinan bandit!"; } },
         { text: "Gunakan taktik penyergapan (+15 EXP, +2 Tactics)", effect: (p) => { game.addJobExp(15); p.stats.tactics += 2; return "Musuh terkepung tanpa perlawanan berarti."; } }
       ]
+    },
+    {
+      id: "kv2", title: "Turnamen Pengawal Kastil", type: "Event Ksatria", sender: "Master of Games",
+      desc: "Turnamen pedang digelar untuk menghibur para bangsawan yang berkunjung ke kastil Lord Anda.",
+      choices: [
+        { text: "Ikut bertanding (+2 Combat, +8 Prestige)", effect: (p) => { p.stats.combat += 2; p.prestige += 8; return "Anda menjuarai turnamen di hadapan seluruh istana!"; } },
+        { text: "Jaga keamanan arena saja (+10 Gold)", effect: (p) => { p.gold += 10; return "Turnamen berjalan aman tanpa insiden."; } }
+      ]
     }
   ]
 };
 
-// GOT TIMELINE DENGAN BATTLE OF NIGHT KING & FINAL WAR
+/* --------------------------------------------------------------------------
+   WORLD LORE EVENTS — Kronik Utama GOT (298-305 AC)
+   -------------------------------------------------------------------------- */
 const worldLoreEvents = [
-  {
-    triggerYear: 298, triggerMonth: 2, id: "w1", title: "Pernikahan Targaryen di Pentos", type: "Berita Dunia GOT",
-    sender: "Utusan Kapal Dagang",
-    desc: "Daenerys Targaryen dinikahkan dengan Khal Drogo di Pentos. Hadiah tiga telur naga diberikan.",
-    choices: [{ text: "Pahami Pesan", effect: () => "Kekuatan kuno naga mulai tercium." }]
-  },
-  {
-    triggerYear: 298, triggerMonth: 5, id: "w2", title: "Wafatnya Hand of the King", type: "Berita Dunia GOT",
-    sender: "Merpati Grand Maester",
+  { triggerYear: 298, triggerMonth: 2, id: "w1", title: "Pernikahan Targaryen di Pentos", type: "Berita Dunia GOT", sender: "Utusan Kapal Dagang",
+    desc: "Daenerys Targaryen dinikahkan dengan Khal Drogo di Pentos. Hadiah tiga telur naga diberikan kepadanya.",
+    choices: [{ text: "Pahami Pesan", effect: () => "Kekuatan kuno naga mulai tercium." }] },
+  { triggerYear: 298, triggerMonth: 5, id: "w2", title: "Wafatnya Hand of the King", type: "Berita Dunia GOT", sender: "Merpati Grand Maester",
     desc: "Lord Jon Arryn meninggal secara misterius. King Robert Baratheon bergerak ke Utara.",
-    choices: [{ text: "Pahami Pesan", effect: () => "Takdir Westeros mulai bergetar." }]
-  },
-  {
-    triggerYear: 298, triggerMonth: 10, id: "w3", title: "Eksekusi Lord Eddard Stark", type: "Berita Dunia GOT",
-    sender: "Pengumuman King's Landing",
+    choices: [{ text: "Pahami Pesan", effect: () => "Takdir Westeros mulai bergetar." }] },
+  { triggerYear: 298, triggerMonth: 7, id: "w2b", title: "Pertempuran Green Fork", type: "Berita Dunia GOT", sender: "Pengawal Riverlands",
+    desc: "Pasukan Tywin Lannister bentrok dengan barisan depan Robb Stark di tepi Green Fork.",
+    choices: [{ text: "Cermati Jalannya Perang", effect: (p) => { p.stats.tactics += 1; return "Taktik umpan pasukan mulai terlihat berbahaya."; } }] },
+  { triggerYear: 298, triggerMonth: 10, id: "w3", title: "Eksekusi Lord Eddard Stark", type: "Berita Dunia GOT", sender: "Pengumuman King's Landing",
     desc: "Eddard Stark dihukum mati atas tuduhan pengkhianatan! Perang Lima Raja (War of the Five Kings) pecah!",
-    choices: [{ text: "Bersiap untuk Perang!", effect: (p) => { p.prestige += 5; return "Seluruh Westeros membara!"; } }]
-  },
-  {
-    triggerYear: 299, triggerMonth: 4, id: "w4", title: "Pertempuran Blackwater Bay", type: "Berita Dunia GOT",
-    sender: "Pengintai Armada",
+    choices: [{ text: "Bersiap untuk Perang!", effect: (p) => { p.prestige += 5; return "Seluruh Westeros membara!"; } }] },
+  { triggerYear: 299, triggerMonth: 4, id: "w4", title: "Pertempuran Blackwater Bay", type: "Berita Dunia GOT", sender: "Pengintai Armada",
     desc: "Armada Stannis Baratheon dihancurkan oleh api Wildfire Lannister di King's Landing.",
-    choices: [{ text: "Cermati Taktik Perang", effect: (p) => { p.stats.tactics += 1; return "Taktik Wildfire mengejutkan dunia."; } }]
-  },
-  {
-    triggerYear: 300, triggerMonth: 3, id: "w5", title: "Tragedi Red Wedding", type: "Berita Dunia GOT",
-    sender: "Merpati Utusan Frey",
+    choices: [{ text: "Cermati Taktik Perang", effect: (p) => { p.stats.tactics += 1; return "Taktik Wildfire mengejutkan dunia."; } }] },
+  { triggerYear: 299, triggerMonth: 8, id: "w4b", title: "Pembebasan Astapor", type: "Berita Dunia GOT", sender: "Pedagang Teluk Budak",
+    desc: "Daenerys Targaryen membebaskan pasukan Unsullied di Astapor dan membakar para tuan budak.",
+    choices: [{ text: "Pahami Pesan", effect: () => "Nama Ibu Naga mulai menggema hingga Westeros." }] },
+  { triggerYear: 300, triggerMonth: 3, id: "w5", title: "Tragedi Red Wedding", type: "Berita Dunia GOT", sender: "Merpati Utusan Frey",
     desc: "Robb Stark dan pasukannya dibantai dalam pesta pernikahan di The Twins! House Stark runtuh sementara.",
-    choices: [{ text: "Berduka / Terkejut", effect: () => "Pengkhianatan paling berdarah dalam sejarah Westeros." }]
-  },
-  {
-    triggerYear: 303, triggerMonth: 8, id: "w6", title: "Battle of the Bastards", type: "Berita Dunia GOT",
-    sender: "Ksatria Utara",
+    choices: [{ text: "Berduka / Terkejut", effect: () => "Pengkhianatan paling berdarah dalam sejarah Westeros." }] },
+  { triggerYear: 300, triggerMonth: 6, id: "w5b", title: "Pernikahan Ungu — Kematian Raja Joffrey", type: "Berita Dunia GOT", sender: "Utusan Istana",
+    desc: "Raja Joffrey Baratheon tewas keracunan di pesta pernikahannya sendiri di King's Landing.",
+    choices: [{ text: "Pahami Pesan", effect: (p) => { p.reputation += 2; return "Istana dilanda kepanikan dan tuduhan saling silang."; } }] },
+  { triggerYear: 300, triggerMonth: 9, id: "w5c", title: "Pengadilan Duel Oberyn Martell", type: "Berita Dunia GOT", sender: "Saksi Arena",
+    desc: "Pangeran Oberyn Martell bertarung dalam duel maut melawan Ser Gregor Clegane demi membela House Martell.",
+    choices: [{ text: "Saksikan Duel", effect: (p) => { p.stats.combat += 1; return "Duel berdarah itu mengubah nasib dua House sekaligus."; } }] },
+  { triggerYear: 302, triggerMonth: 5, id: "w6b", title: "Pembebasan Meereen", type: "Berita Dunia GOT", sender: "Pedagang Teluk Budak",
+    desc: "Daenerys Targaryen menaklukkan Meereen dan menjadikannya ibu kota sementara pemerintahannya di Essos.",
+    choices: [{ text: "Pahami Pesan", effect: () => "Ratu Naga kini menguasai seluruh Teluk Budak." }] },
+  { triggerYear: 303, triggerMonth: 3, id: "w6c", title: "Pertempuran Hardhome", type: "Berita Dunia GOT", sender: "Penjaga Night's Watch",
+    desc: "Jon Snow menyaksikan Night King membangkitkan pasukan mati di Hardhome, di utara The Wall.",
+    choices: [{ text: "Dengar Peringatan", effect: (p) => { p.stats.intrigue += 1; return "Ancaman di balik Tembok kini nyata."; } }] },
+  { triggerYear: 303, triggerMonth: 8, id: "w6", title: "Battle of the Bastards", type: "Berita Dunia GOT", sender: "Ksatria Utara",
     desc: "Jon Snow dan Sansa Stark merebut kembali Winterfell dari pimpinan kejam Ramsay Bolton!",
-    choices: [{ text: "Puji Kemenangan Utara", effect: (p) => { p.prestige += 5; return "Panji Wolf kembali berkibar di Winterfell!"; } }]
-  },
-  // PERANG LAWAN NIGHT KING
-  {
-    triggerYear: 305, triggerMonth: 3, id: "w7", title: "PERANG BATTLE OF WINTERFELL (NIGHT KING)", type: "PERANG BESAR WESTEROS",
-    sender: "Sinyal Bahaya The Wall",
-    desc: "Night King dan Armada Undead / White Walkers menembus The Wall! Perang bertahan hidup seluruh manusia meletus di Winterfell!",
+    choices: [{ text: "Puji Kemenangan Utara", effect: (p) => { p.prestige += 5; return "Panji Wolf kembali berkibar di Winterfell!"; } }] },
+  { triggerYear: 304, triggerMonth: 6, id: "w6d", title: "Kehancuran Sept of Baelor", type: "Berita Dunia GOT", sender: "Penduduk King's Landing",
+    desc: "Cersei Lannister meledakkan Sept of Baelor dengan wildfire, menewaskan banyak petinggi rival politiknya.",
+    choices: [{ text: "Pahami Pesan", effect: (p) => { p.reputation -= 2; return "King's Landing berduka dalam ketakutan baru."; } }] },
+  { triggerYear: 305, triggerMonth: 1, id: "w6e", title: "Runtuhnya Tembok Utara", type: "PERANG BESAR WESTEROS", sender: "Sinyal Bahaya The Wall",
+    desc: "Night King menunggangi naga mati dan menghancurkan The Wall di Eastwatch. Jalan menuju Selatan kini terbuka bagi para mayat hidup.",
+    choices: [{ text: "Bersiap Menghadapi Kegelapan", effect: (p) => { p.stats.combat += 1; return "Seluruh Utara bersiaga penuh."; } }] },
+  { triggerYear: 305, triggerMonth: 3, id: "w7", title: "PERANG BATTLE OF WINTERFELL (NIGHT KING)", type: "PERANG BESAR WESTEROS", sender: "Sinyal Bahaya Winterfell",
+    desc: "Night King dan Armada Undead / White Walkers menyerang Winterfell! Perang bertahan hidup seluruh manusia meletus.",
     choices: [
-      { text: "Kirim Pasukan Bantuan (+15 Prestige, -15 Health, +3 Combat)", effect: (p) => { p.prestige += 15; p.health = Math.max(5, p.health - 15); p.stats.combat += 3; return "Anda bertempur di garis depan Winterfell melawan kegelapan melampaui tembok!"; } },
+      { text: "Kirim Pasukan Bantuan (+15 Prestige, -15 Health, +3 Combat)", effect: (p) => { p.prestige += 15; p.health = Math.max(5, p.health - 15); p.stats.combat += 3; return "Anda bertempur di garis depan Winterfell melawan kegelapan!"; } },
       { text: "Bertahan di Benteng Sendiri (+5 Prestige)", effect: (p) => { p.prestige += 5; return "Anda mengirim pasokan cadangan dan bertahan."; } }
-    ]
-  },
-  // PERANG AKHIR KING'S LANDING
-  {
-    triggerYear: 305, triggerMonth: 5, id: "w8", title: "PERANG AKHIR: THE BATTLE OF KING'S LANDING", type: "PERANG AKHIR TAHTA",
-    sender: "Terompet Perang Terakhir",
-    desc: "Daenerys Targaryen menyerang King's Landing dengan Naga Drogon untuk menggulingkan Cersei Lannister! Api naga membakar kota!",
+    ] },
+  { triggerYear: 305, triggerMonth: 4, id: "w7b", title: "Loot Train Battle di Reach", type: "Berita Dunia GOT", sender: "Pengawal Konvoi",
+    desc: "Konvoi logistik Lannister yang membawa hasil rampasan dari Highgarden dihancurkan oleh serangan Dothraki dan naga.",
+    choices: [{ text: "Pahami Pesan", effect: (p) => { p.stats.tactics += 1; return "Keseimbangan kekuatan perang berubah drastis."; } }] },
+  { triggerYear: 305, triggerMonth: 5, id: "w8", title: "PERANG AKHIR: THE BATTLE OF KING'S LANDING", type: "PERANG AKHIR TAHTA", sender: "Terompet Perang Terakhir",
+    desc: "Daenerys Targaryen menyerang King's Landing dengan Naga Drogon untuk menggulingkan Cersei Lannister! Api naga membakar kota.",
     choices: [
       { text: "Uji Nasib di Tengah Perang (+25 Prestige, +100 Gold)", effect: (p) => { p.prestige += 25; p.gold += 100; return "Anda memimpin pasukan dalam penentuan takhta Iron Throne!"; } },
       { text: "Amankan Kekuasaan Lokal (+10 Prestige)", effect: (p) => { p.prestige += 10; return "Anda mengonsolidasikan kekuasaan wilayah sendiri."; } }
-    ]
-  }
+    ] },
+  { triggerYear: 305, triggerMonth: 6, id: "w9", title: "Dewan Penentu Raja Baru", type: "Berita Dunia GOT", sender: "Dewan Lord Westeros",
+    desc: "Para Lord Westeros berkumpul di reruntuhan King's Landing untuk menentukan siapa yang layak duduk di Iron Throne.",
+    choices: [{ text: "Amati Perkembangan Politik", effect: (p) => { p.stats.diplomacy += 1; return "Era baru Westeros akan segera dimulai."; } }] }
+];
+
+/* --------------------------------------------------------------------------
+   HOUSE WAR CAMPAIGNS — misi perang khusus mengikuti alur cerita Lord pilihan
+   -------------------------------------------------------------------------- */
+const houseWarEvents = {
+  stark: [
+    { triggerYear: 298, triggerMonth: 11, id: "hw-stark-1", title: "PANGGILAN PERANG: Berbaris Bersama Robb Stark", type: "Panggilan Perang", sender: "Kastelan Winterfell",
+      desc: "Robb Stark menyatakan perang atas eksekusi ayahnya. Sebagai ksatria sumpah Stark, Anda dipanggil ikut berbaris ke selatan.",
+      choices: [
+        { text: "Maju ke garis depan (+15 Prestige, +30 EXP, -15 Health)", effect: (p) => { p.prestige += 15; game.addJobExp(30); p.health = Math.max(1, p.health - 15); return "Anda bertempur gagah di bawah panji Direwolf."; } },
+        { text: "Jaga logistik pasukan (+15 EXP, +1 Stewardship)", effect: (p) => { game.addJobExp(15); p.stats.stewardship += 1; return "Pasokan pasukan Utara tetap terjaga berkat kerja Anda."; } }
+      ] },
+    { triggerYear: 299, triggerMonth: 1, id: "hw-stark-2", title: "Pertempuran Whispering Wood", type: "Panggilan Perang", sender: "Perwira Stark",
+      desc: "Pasukan Stark menyergap barisan Jaime Lannister di hutan pada malam hari.", 
+      choices: [{ text: "Ikut Penyergapan Malam (+2 Combat, +20 EXP)", effect: (p) => { p.stats.combat += 2; game.addJobExp(20); return "Penyergapan berhasil menahan Jaime Lannister!"; } }] },
+    { triggerYear: 300, triggerMonth: 3, id: "hw-stark-3", title: "MALAPETAKA: Anda di The Twins", type: "Krisis Perang", sender: "Kabar dari The Twins",
+      desc: "Anda turut hadir dalam pernikahan di The Twins ketika House Frey berkhianat dan membantai rombongan Stark.",
+      choices: [
+        { text: "Lari menyelamatkan diri (-10 Reputasi, tetap hidup)", effect: (p) => { p.reputation -= 10; return "Anda berhasil kabur di tengah kekacauan berdarah, namun dihantui rasa bersalah."; } },
+        { text: "Bertarung membela tuan Anda (-40 Health, +20 Prestige)", effect: (p) => { p.health = Math.max(1, p.health - 40); p.prestige += 20; return "Anda nyaris tewas namun dikenang sebagai ksatria paling setia House Stark."; } }
+      ] },
+    { triggerYear: 303, triggerMonth: 8, id: "hw-stark-4", title: "PANGGILAN PERANG: Battle of the Bastards", type: "Panggilan Perang", sender: "Jon Snow",
+      desc: "Jon Snow memanggil semua ksatria setia Stark untuk merebut kembali Winterfell dari Ramsay Bolton.",
+      choices: [{ text: "Bertempur di Barisan Depan (+20 Prestige, +40 EXP, -20 Health)", effect: (p) => { p.prestige += 20; game.addJobExp(40); p.health = Math.max(1, p.health - 20); return "Winterfell kembali ke tangan House Stark berkat pengorbanan Anda!"; } }] }
+  ],
+  lannister: [
+    { triggerYear: 299, triggerMonth: 4, id: "hw-lan-1", title: "PANGGILAN PERANG: Pertahankan King's Landing", type: "Panggilan Perang", sender: "Tywin Lannister",
+      desc: "Armada Stannis Baratheon mendekati King's Landing. Anda diperintahkan bertahan di tembok kota bersama pasukan Lannister.",
+      choices: [
+        { text: "Bertahan di Garis Tembok (+15 Prestige, +30 EXP, -15 Health)", effect: (p) => { p.prestige += 15; game.addJobExp(30); p.health = Math.max(1, p.health - 15); return "Kota berhasil dipertahankan berkat api wildfire dan keberanian Anda."; } },
+        { text: "Amankan Istana Merah (+10 Gold, +15 EXP)", effect: (p) => { p.gold += 10; game.addJobExp(15); return "Anda menjaga keluarga kerajaan tetap aman selama pertempuran."; } }
+      ] },
+    { triggerYear: 302, triggerMonth: 10, id: "hw-lan-2", title: "Ekspedisi Perampasan Highgarden", type: "Panggilan Perang", sender: "Jenderal Lannister",
+      desc: "Cersei memerintahkan penyerbuan untuk merampas kekayaan panen dan emas House Tyrell di Highgarden.",
+      choices: [{ text: "Ikut Serbuan (+25 Gold, +1 Combat)", effect: (p) => { p.gold += 25; p.stats.combat += 1; return "Highgarden dijarah, kas kerajaan kembali terisi."; } }] },
+    { triggerYear: 305, triggerMonth: 5, id: "hw-lan-3", title: "KEPUTUSAN AKHIR: Bertahan atau Membelot?", type: "Krisis Perang", sender: "Ratu Cersei Lannister",
+      desc: "Naga Daenerys menyerang King's Landing. Cersei menuntut kesetiaan terakhir Anda saat kota mulai terbakar.",
+      choices: [
+        { text: "Tetap Setia pada Cersei (-30 Health, +15 Prestige jika selamat)", effect: (p) => { p.health = Math.max(1, p.health - 30); p.prestige += 15; return "Anda bertahan hingga akhir di tengah reruntuhan King's Landing."; } },
+        { text: "Membelot dan Menyerah (-15 Reputasi, tetap hidup)", effect: (p) => { p.reputation -= 15; return "Anda melarikan diri sebelum kota jatuh sepenuhnya."; } }
+      ] }
+  ],
+  baratheon: [
+    { triggerYear: 299, triggerMonth: 4, id: "hw-bar-1", title: "PANGGILAN PERANG: Armada Stannis Menyerang", type: "Panggilan Perang", sender: "Stannis Baratheon",
+      desc: "Stannis Baratheon memimpin armadanya menyerbu Blackwater Bay untuk merebut Iron Throne.",
+      choices: [{ text: "Ikut Serangan Laut (+15 Prestige, -20 Health)", effect: (p) => { p.prestige += 15; p.health = Math.max(1, p.health - 20); return "Armada hancur oleh wildfire, namun keberanian Anda dicatat sejarah."; } }] },
+    { triggerYear: 303, triggerMonth: 1, id: "hw-bar-2", title: "Pawai Panjang ke Utara", type: "Panggilan Perang", sender: "Perwira Baratheon",
+      desc: "Stannis memimpin pasukannya berbaris jauh ke Utara demi membantu pertahanan melawan ancaman di balik Tembok.",
+      choices: [{ text: "Bertahan dalam Perjalanan (+1 Tactics, +20 EXP)", effect: (p) => { p.stats.tactics += 1; game.addJobExp(20); return "Pasukan bertahan melewati badai salju yang mematikan."; } }] }
+  ],
+  martell: [
+    { triggerYear: 300, triggerMonth: 9, id: "hw-mar-1", title: "PANGGILAN PERANG: Balas Dendam Oberyn", type: "Panggilan Perang", sender: "Pangeran Doran Martell",
+      desc: "Setelah kematian Oberyn, House Martell diam-diam menyiapkan rencana balas dendam terhadap House Lannister.",
+      choices: [{ text: "Ikut Rencana Rahasia (+2 Intrigue, +15 Prestige)", effect: (p) => { p.stats.intrigue += 2; p.prestige += 15; return "Rencana rahasia House Martell mulai bergerak dalam kegelapan."; } }] },
+    { triggerYear: 302, triggerMonth: 6, id: "hw-mar-2", title: "Aliansi dengan Ratu Naga", type: "Panggilan Perang", sender: "Utusan Dorne",
+      desc: "House Martell mempertimbangkan aliansi dengan Daenerys Targaryen demi menjatuhkan Lannister bersama-sama.",
+      choices: [{ text: "Dukung Aliansi (+1 Diplomacy, +10 Prestige)", effect: (p) => { p.stats.diplomacy += 1; p.prestige += 10; return "Dorne kini condong mendukung Ratu Naga dari seberang lautan."; } }] }
+  ],
+  tyrell: [
+    { triggerYear: 302, triggerMonth: 10, id: "hw-tyr-1", title: "PANGGILAN PERANG: Pertahankan Highgarden", type: "Panggilan Perang", sender: "Lady Olenna Tyrell",
+      desc: "Pasukan Lannister bergerak menyerbu Highgarden untuk merampas kekayaan House Tyrell.",
+      choices: [
+        { text: "Pertahankan Kastil (-20 Health, +15 Prestige)", effect: (p) => { p.health = Math.max(1, p.health - 20); p.prestige += 15; return "Anda bertarung sengit demi mempertahankan Highgarden."; } },
+        { text: "Bantu Evakuasi Warga (+2 Stewardship, +10 Reputasi)", effect: (p) => { p.stats.stewardship += 2; p.reputation += 10; return "Banyak nyawa warga terselamatkan berkat tindakan cepat Anda."; } }
+      ] }
+  ],
+  greyjoy: [
+    { triggerYear: 299, triggerMonth: 6, id: "hw-grey-1", title: "PANGGILAN PERANG: Serbuan Pantai Utara", type: "Panggilan Perang", sender: "Kapten Ironborn",
+      desc: "Armada Ironborn menyerang garis pantai Utara selagi House Stark sibuk berperang jauh dari rumah.",
+      choices: [{ text: "Ikut Serbuan Pesisir (+20 Gold, +1 Combat)", effect: (p) => { p.gold += 20; p.stats.combat += 1; return "Rampasan pesisir menambah kekayaan armada Pyke."; } }] }
+  ],
+  velaryon: [
+    { triggerYear: 299, triggerMonth: 3, id: "hw-vel-1", title: "PANGGILAN PERANG: Blokade Blackwater", type: "Panggilan Perang", sender: "Laksamana Velaryon",
+      desc: "Armada Velaryon diperintahkan memblokade Blackwater Bay untuk mencegah pasokan musuh memasuki King's Landing.",
+      choices: [{ text: "Pimpin Blokade Laut (+1 Tactics, +15 Prestige)", effect: (p) => { p.stats.tactics += 1; p.prestige += 15; return "Blokade laut berjalan sukses menahan bantuan musuh."; } }] }
+  ],
+  targaryen: [
+    { triggerYear: 299, triggerMonth: 8, id: "hw-dae-1", title: "PANGGILAN PERANG: Pembebasan Astapor", type: "Kampanye Essos", sender: "Ser Jorah Mormont",
+      desc: "Daenerys memerintahkan penyerangan terhadap para tuan budak di Astapor untuk membebaskan pasukan Unsullied.",
+      choices: [{ text: "Ikut Serangan Pembebasan (+15 Prestige, +2 Combat)", effect: (p) => { p.prestige += 15; p.stats.combat += 2; return "Astapor jatuh dan ribuan budak dibebaskan atas nama Ratu Naga."; } }] },
+    { triggerYear: 300, triggerMonth: 1, id: "hw-dae-2", title: "Penaklukan Yunkai", type: "Kampanye Essos", sender: "Utusan Ratu",
+      desc: "Pasukan Daenerys mengepung Yunkai, kota kuning para pedagang budak kenikmatan.",
+      choices: [{ text: "Ikut Pengepungan (+20 EXP, +1 Tactics)", effect: (p) => { game.addJobExp(20); p.stats.tactics += 1; return "Yunkai menyerah tanpa perlawanan berarti."; } }] },
+    { triggerYear: 302, triggerMonth: 5, id: "hw-dae-3", title: "PANGGILAN PERANG: Perebutan Meereen", type: "Kampanye Essos", sender: "Daenerys Targaryen",
+      desc: "Pertempuran besar pecah di gerbang Meereen. Ratu Naga membutuhkan pasukan setianya untuk merebut kota.",
+      choices: [{ text: "Serbu Gerbang Kota (+25 Prestige, -20 Health)", effect: (p) => { p.prestige += 25; p.health = Math.max(1, p.health - 20); return "Meereen jatuh, dan Anda dikenal sebagai salah satu pahlawan penaklukan."; } }] },
+    { triggerYear: 305, triggerMonth: 5, id: "hw-dae-4", title: "PANGGILAN PERANG: Serangan ke King's Landing", type: "Kampanye Essos", sender: "Daenerys Targaryen",
+      desc: "Armada dan naga Ratu Daenerys akhirnya berlayar menuju Westeros untuk merebut Iron Throne dari Cersei Lannister.",
+      choices: [{ text: "Ikut Menyerbu King's Landing (+30 Prestige, +80 Gold, -25 Health)", effect: (p) => { p.prestige += 30; p.gold += 80; p.health = Math.max(1, p.health - 25); return "Api naga membakar kota, dan nama Anda tercatat dalam penaklukan terakhir."; } }] }
+  ]
+};
+
+/* --------------------------------------------------------------------------
+   RANDOM TRAVEL EVENTS
+   -------------------------------------------------------------------------- */
+const travelEvents = [
+  { id: "tr1", title: "Penyergapan Bandit di Jalan", type: "Event Perjalanan", sender: "Pengawal Rombongan",
+    desc: "Sekelompok bandit menghadang rombongan Anda di tengah perjalanan.",
+    choices: [
+      { text: "Lawan mereka (+1 Combat, -10 Health)", effect: (p) => { p.stats.combat += 1; p.health = Math.max(1, p.health - 10); return "Bandit berhasil dipukul mundur setelah pertarungan sengit."; } },
+      { text: "Bayar upeti jalan (-15 Gold)", effect: (p) => { p.gold = Math.max(0, p.gold - 15); return "Anda membayar upeti agar perjalanan tidak terganggu."; } }
+    ] },
+  { id: "tr2", title: "Badai di Laut Sempit", type: "Event Perjalanan", sender: "Kapten Kapal",
+    desc: "Kapal Anda diterjang badai besar saat menyeberangi Laut Sempit menuju Essos.",
+    choices: [
+      { text: "Bantu awak kapal (+1 Tactics)", effect: (p) => { p.stats.tactics += 1; return "Kapal berhasil selamat berkat kerja sama seluruh awak."; } },
+      { text: "Berlindung di kabin (-5 Health)", effect: (p) => { p.health = Math.max(1, p.health - 5); return "Anda mabuk laut namun selamat sampai tujuan."; } }
+    ] },
+  { id: "tr3", title: "Pedagang Kaya di Perjalanan", type: "Event Perjalanan", sender: "Kafilah Dagang",
+    desc: "Sebuah kafilah dagang menawarkan barang langka dengan harga murah selama perjalanan.",
+    choices: [
+      { text: "Beli barang dagangan (-10 Gold, +1 Stewardship)", effect: (p) => { p.gold = Math.max(0, p.gold - 10); p.stats.stewardship += 1; return "Anda mendapat wawasan baru dari perdagangan di jalan."; } },
+      { text: "Lewati saja", effect: () => "Anda melanjutkan perjalanan tanpa singgah." }
+    ] }
 ];
 
 /* --------------------------------------------------------------------------
@@ -366,7 +517,7 @@ const ui = {
   switchTab(tabId, evt) {
     document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    
+
     document.getElementById(tabId).classList.add('active');
     if (evt && evt.currentTarget) {
       evt.currentTarget.classList.add('active');
@@ -382,6 +533,9 @@ const ui = {
     document.getElementById('res-land').innerText = `${state.player.landHectares} Ha`;
     document.getElementById('res-talent-pts').innerText = state.player.talentPoints;
     document.getElementById('res-date').innerText = `${state.date.year} AC, M${state.date.month}`;
+
+    const locName = game.getLocationName(state.player.currentLocation) || "-";
+    document.getElementById('res-location').innerText = state.travel.inProgress ? "Dalam Perjalanan..." : locName;
 
     const unreadCount = state.inbox.filter(msg => !msg.read).length;
     const badge = document.getElementById('inbox-badge');
@@ -406,7 +560,7 @@ const ui = {
 
     document.getElementById('bar-health').style.width = `${healthPct}%`;
     document.getElementById('bar-health-text').innerText = `${state.player.health} / ${state.player.maxHealth}`;
-    
+
     document.getElementById('bar-hunger').style.width = `${hungerPct}%`;
     document.getElementById('bar-hunger-text').innerText = `${state.player.hunger} / 100`;
 
@@ -425,18 +579,28 @@ const ui = {
     const container = document.getElementById('noble-offers-list');
     container.innerHTML = '';
 
-    state.nobleHouses.forEach(house => {
+    const visibleHouses = state.nobleHouses.filter(house =>
+      house.continent === state.player.continent || state.player.activeNobleHouse === house.id
+    );
+
+    if (visibleHouses.length === 0) {
+      container.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">Tidak ada House Agung yang menerima pengabdian di wilayah ini. Cobalah berpindah lokasi lewat menu Perjalanan.</p>`;
+      return;
+    }
+
+    visibleHouses.forEach(house => {
       let reqPrestigeAdj = house.reqPrestige;
       if (state.player.unlockedTalents.includes("t6")) reqPrestigeAdj -= 2;
       if (state.player.region === house.region) reqPrestigeAdj -= 1;
 
       const meetsPrestige = state.player.prestige >= reqPrestigeAdj;
       const meetsRep = state.player.reputation >= house.reqReputation;
-      const isEligible = meetsPrestige && meetsRep;
+      const inRightPlace = house.continent === state.player.continent;
+      const isEligible = meetsPrestige && meetsRep && inRightPlace;
       const isServing = state.player.activeNobleHouse === house.id;
 
       const card = document.createElement('div');
-      card.className = `job-card ${isServing ? 'active-job' : ''}`;
+      card.className = `job-card ${isServing ? 'active-job' : ''} ${house.continent === 'essos' ? 'essos-job-card' : ''}`;
       card.innerHTML = `
         <div>
           <div class="job-name">${house.sigil} ${house.name} (${house.region})</div>
@@ -444,13 +608,13 @@ const ui = {
           <div class="job-desc">${house.story}</div>
         </div>
         <div>
-          <div class="job-perks">Gelar Ksatria: ${house.titleOffer} (+${house.monthlyPay} Gold/bln)</div>
+          <div class="job-perks">Gelar: ${house.titleOffer} (+${house.monthlyPay} Gold/bln)</div>
           <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
-            Syarat: Prestige ≥ ${reqPrestigeAdj} | Reputasi ≥ ${house.reqReputation}
+            Syarat: Prestige ≥ ${reqPrestigeAdj} | Reputasi ≥ ${house.reqReputation} ${!inRightPlace && !isServing ? '| Harus berada di ' + (house.continent === 'essos' ? 'Essos' : 'Westeros') : ''}
           </div>
         </div>
         <button class="v-btn" onclick="game.acceptNobleOffer('${house.id}')" ${!isEligible || isServing ? 'disabled' : ''}>
-          ${isServing ? 'Mengabdi Sebagai Ksatria Sworn' : isEligible ? 'Sumpah Setia & Jadi Ksatria' : 'Syarat Belum Terpenuhi'}
+          ${isServing ? 'Mengabdi Sebagai Sworn Sword' : isEligible ? 'Sumpah Setia & Mengabdi' : 'Syarat Belum Terpenuhi'}
         </button>
       `;
       container.appendChild(card);
@@ -514,7 +678,7 @@ const ui = {
     } else {
       const currentRank = currentJobObj.ranks[state.player.jobRankIndex];
       const nextRank = currentJobObj.ranks[state.player.jobRankIndex + 1];
-      
+
       let progressPct = 100;
       let expText = "PANGKAT MAKSIMAL";
 
@@ -523,10 +687,14 @@ const ui = {
         expText = `${state.player.jobExp} / ${currentRank.expReq} EXP`;
       }
 
+      const houseTag = state.player.activeNobleHouse && currentJobObj.id === 'knight_vassal'
+        ? `<span class="campaign-banner">Alur Perang: ${state.nobleHouses.find(h => h.id === state.player.activeNobleHouse).name}</span>`
+        : '';
+
       activePanel.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div>
-            <h3 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">${currentJobObj.title} — ${currentRank.name}</h3>
+            <h3 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">${currentJobObj.title} — ${currentRank.name} ${houseTag}</h3>
             <div style="font-size:0.75rem; color:var(--fm-green-accent);">Gaji Bulanan: +${currentRank.income} Gold</div>
           </div>
         </div>
@@ -542,7 +710,7 @@ const ui = {
     container.innerHTML = '';
 
     state.jobs.forEach(job => {
-      if (job.id === 'knight_vassal') return; // Job khusus ksatria dipisah
+      if (job.id === 'knight_vassal') return;
 
       const isQualified = state.player.stats[job.req.stat] >= job.req.val;
       const isCurrent = state.player.currentJob === job.id;
@@ -573,20 +741,30 @@ const ui = {
     const container = document.getElementById('shop-list');
     container.innerHTML = '';
 
-    state.shopItems.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'shop-card';
-      card.innerHTML = `
-        <div>
-          <div class="item-name">${item.name}</div>
-          <div class="item-desc">${item.desc}</div>
-        </div>
-        <div class="item-price">${item.cost} Gold</div>
-        <button class="v-btn" onclick="game.buyItem('${item.id}')" ${state.player.gold < item.cost ? 'disabled' : ''}>
-          Beli Peralatan
-        </button>
-      `;
-      container.appendChild(card);
+    const categories = [...new Set(state.shopItems.map(i => i.category))];
+
+    categories.forEach(cat => {
+      const title = document.createElement('div');
+      title.className = 'shop-category-title';
+      title.style.gridColumn = '1 / -1';
+      title.innerText = cat;
+      container.appendChild(title);
+
+      state.shopItems.filter(i => i.category === cat).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'shop-card';
+        card.innerHTML = `
+          <div>
+            <div class="item-name">${item.name}</div>
+            <div class="item-desc">${item.desc}</div>
+          </div>
+          <div class="item-price">${item.cost} Gold</div>
+          <button class="v-btn" onclick="game.buyItem('${item.id}')" ${state.player.gold < item.cost ? 'disabled' : ''}>
+            Beli Peralatan
+          </button>
+        `;
+        container.appendChild(card);
+      });
     });
   },
 
@@ -675,14 +853,70 @@ const ui = {
     const grid = document.getElementById('province-grid');
     grid.innerHTML = '';
     state.provinces.forEach(p => {
+      const isHere = state.player.currentLocation === p.id;
       const card = document.createElement('div');
-      card.className = 'province-card';
+      card.className = `province-card ${isHere ? 'active-region' : ''}`;
       card.innerHTML = `
-        <h4 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">${p.name}</h4>
+        <h4 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">${p.name} ${isHere ? '📍' : ''}</h4>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Penguasa: ${p.owner}</div>
         <div style="font-size:0.75rem; color:var(--fm-green-accent); margin-top:4px;">Pajak Bulanan: +${p.tax} Gold</div>
       `;
       grid.appendChild(card);
+    });
+  },
+
+  renderTravel() {
+    const statusPanel = document.getElementById('travel-status-panel');
+    if (state.travel.inProgress) {
+      statusPanel.innerHTML = `
+        <div class="travel-status-active">
+          <div>
+            <div style="color:var(--vic-gold-bright); font-family:var(--font-cinzel); font-size:0.95rem;">Sedang dalam perjalanan menuju ${game.getLocationName(state.travel.destinationId)}</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">Estimasi tiba dalam ${state.travel.monthsLeft} bulan lagi.</div>
+          </div>
+          <div style="font-size:1.5rem;">${state.travel.destContinent === 'essos' ? '⛵' : '🐎'}</div>
+        </div>
+      `;
+    } else {
+      statusPanel.innerHTML = `
+        <div style="font-size:0.85rem; color:var(--text-muted);">
+          Anda saat ini berada di <strong style="color:var(--vic-gold-bright);">${game.getLocationName(state.player.currentLocation)}</strong>
+          (${state.player.continent === 'essos' ? 'Essos' : 'Westeros'}).
+        </div>
+      `;
+    }
+
+    const westerosGrid = document.getElementById('travel-westeros-grid');
+    westerosGrid.innerHTML = '';
+    state.provinces.forEach(loc => {
+      const isHere = state.player.currentLocation === loc.id && !state.travel.inProgress;
+      const cost = game.getTravelCost('westeros');
+      const card = document.createElement('div');
+      card.className = `location-card ${isHere ? 'current-location' : ''}`;
+      card.innerHTML = `
+        <div class="location-name">${loc.name}</div>
+        <div class="location-owner">${loc.owner}</div>
+        <div class="location-meta">${loc.region}</div>
+        ${isHere ? '<span class="here-tag">Anda di sini</span>' :
+          `<button class="v-btn" onclick="game.travelTo('${loc.id}','westeros')" ${state.travel.inProgress || state.player.gold < cost.gold ? 'disabled' : ''}>Berkuda ke sini (${cost.gold}G, ${cost.months} bln)</button>`}
+      `;
+      westerosGrid.appendChild(card);
+    });
+
+    const essosGrid = document.getElementById('travel-essos-grid');
+    essosGrid.innerHTML = '';
+    state.essosLocations.forEach(loc => {
+      const isHere = state.player.currentLocation === loc.id && !state.travel.inProgress;
+      const cost = game.getTravelCost('essos');
+      const card = document.createElement('div');
+      card.className = `location-card ${isHere ? 'current-location' : ''}`;
+      card.innerHTML = `
+        <div class="location-name">${loc.name}</div>
+        <div class="location-owner">${loc.desc}</div>
+        ${isHere ? '<span class="here-tag">Anda di sini</span>' :
+          `<button class="v-btn" onclick="game.travelTo('${loc.id}','essos')" ${state.travel.inProgress || state.player.gold < cost.gold ? 'disabled' : ''}>Berlayar ke sini (${cost.gold}G, ${cost.months} bln)</button>`}
+      `;
+      essosGrid.appendChild(card);
     });
   },
 
@@ -719,6 +953,20 @@ const ui = {
     entry.className = 'log-item';
     entry.innerHTML = `<span class="log-date">[${state.date.year} AC, M${state.date.month}]</span> ${text}`;
     logBox.prepend(entry);
+  },
+
+  renderAll() {
+    ui.renderTopBar();
+    ui.renderProfile();
+    ui.renderNobleOffers();
+    ui.renderVassalHousePanel();
+    ui.renderJobs();
+    ui.renderShop();
+    ui.renderLandPanel();
+    ui.renderResearchAndTalents();
+    ui.renderProvinces();
+    ui.renderTravel();
+    ui.renderInbox();
   }
 };
 
@@ -758,6 +1006,8 @@ const game = {
     if (state.player.region === 'The Iron Islands') stats.tactics += 1;
 
     state.player.stats = stats;
+    state.player.currentLocation = state.homeRegionToLocation[state.player.region] || "winterfell";
+    state.player.continent = "westeros";
 
     document.getElementById('creation-modal').remove();
     document.getElementById('game-interface').classList.remove('hidden');
@@ -768,44 +1018,140 @@ const game = {
       sender: "Surat Grand Maester",
       type: "Mulai Petualangan",
       date: `${state.date.year} AC, M${state.date.month}`,
-      desc: `King Robert Baratheon bertakhta di Iron Throne. Bangun reputasi Anda di ${state.player.region}, kumpulkan tanah, abdi pada House Great Westeros, dan raih kekuasaan.`,
+      desc: `King Robert Baratheon bertakhta di Iron Throne. Bangun reputasi Anda di ${state.player.region}, kumpulkan tanah, abdi pada House Great Westeros, dan raih kekuasaan. Anda juga bisa berlayar menyeberangi Laut Sempit menuju Essos jika ingin mencari peruntungan lain.`,
       choices: [{ text: "Mulai Petualangan", effect: () => "Catatan sejarah Anda dimulai." }],
       read: false
     });
 
-    ui.renderTopBar();
-    ui.renderProfile();
-    ui.renderNobleOffers();
-    ui.renderVassalHousePanel();
-    ui.renderJobs();
-    ui.renderShop();
-    ui.renderLandPanel();
-    ui.renderResearchAndTalents();
-    ui.renderProvinces();
-    ui.renderInbox();
+    ui.renderAll();
+    ui.addLog(`Karir Anda dimulai di ${game.getLocationName(state.player.currentLocation)} sebagai ${state.player.title}.`);
+  },
 
-    ui.addLog(`Karir Anda dimulai di ${state.player.region} sebagai ${state.player.title}.`);
+  getLocationName(locId) {
+    const w = state.provinces.find(p => p.id === locId);
+    if (w) return w.name;
+    const e = state.essosLocations.find(p => p.id === locId);
+    if (e) return e.name;
+    return locId;
+  },
+
+  getTravelCost(destContinent) {
+    if (destContinent === state.player.continent) {
+      return { gold: 15, months: 1 };
+    }
+    return { gold: 70, months: 3 };
+  },
+
+  travelTo(destId, destContinent) {
+    if (state.travel.inProgress) {
+      ui.addLog("Anda sedang dalam perjalanan dan tidak bisa memulai perjalanan baru.");
+      return;
+    }
+    if (destId === state.player.currentLocation) {
+      ui.addLog("Anda sudah berada di lokasi tersebut.");
+      return;
+    }
+
+    const cost = game.getTravelCost(destContinent);
+    if (state.player.gold < cost.gold) {
+      ui.addLog("Emas tidak cukup untuk membiayai perjalanan ini.");
+      return;
+    }
+
+    state.player.gold -= cost.gold;
+    state.travel.inProgress = true;
+    state.travel.destinationId = destId;
+    state.travel.destContinent = destContinent;
+    state.travel.monthsLeft = cost.months;
+
+    ui.addLog(`Anda memulai perjalanan menuju ${game.getLocationName(destId)}. Estimasi tiba dalam ${cost.months} bulan.`);
+    ui.renderAll();
+  },
+
+  processTravel() {
+    if (!state.travel.inProgress) return;
+
+    if (Math.random() < 0.35) {
+      const evt = travelEvents[Math.floor(Math.random() * travelEvents.length)];
+      state.inbox.unshift({ ...evt, date: `${state.date.year} AC, M${state.date.month}`, read: false });
+      ui.addLog(`KEJADIAN DI PERJALANAN: ${evt.title}`);
+    }
+
+    state.travel.monthsLeft -= 1;
+    if (state.travel.monthsLeft <= 0) {
+      state.player.currentLocation = state.travel.destinationId;
+      state.player.continent = state.travel.destContinent;
+      state.travel.inProgress = false;
+
+      ui.addLog(`Anda tiba di ${game.getLocationName(state.player.currentLocation)}.`);
+
+      if (state.player.continent === 'essos' && !state.player.hasVisitedEssos) {
+        state.player.hasVisitedEssos = true;
+        state.inbox.unshift({
+          id: `essos-arrival-${Date.now()}`,
+          title: "Menginjakkan Kaki di Essos",
+          sender: "Kapten Kapal Dagang",
+          type: "Peristiwa Perjalanan",
+          date: `${state.date.year} AC, M${state.date.month}`,
+          desc: "Anda kini berada di seberang Laut Sempit. Kabar tentang Daenerys Targaryen, Ibu Naga, terdengar di seluruh Free Cities. Jika berminat, Anda dapat menawarkan pengabdian kepadanya melalui menu Tawaran Great Houses.",
+          choices: [{ text: "Pahami Situasi", effect: () => "Petualangan baru menanti di tanah asing ini." }],
+          read: false
+        });
+      }
+    }
+  },
+
+  applyAgingGrowth() {
+    const p = state.player;
+    const statKeys = Object.keys(p.stats);
+    const pick = () => statKeys[Math.floor(Math.random() * statKeys.length)];
+
+    if (p.age <= 30) {
+      const s1 = pick();
+      p.stats[s1] += 1;
+      ui.addLog(`ULANG TAHUN (${p.age} tahun): Masa muda Anda berkembang pesat. +1 ${s1.toUpperCase()}.`);
+    } else if (p.age <= 50) {
+      if (Math.random() < 0.6) {
+        const s1 = pick();
+        p.stats[s1] += 1;
+        ui.addLog(`ULANG TAHUN (${p.age} tahun): Pengalaman menambah kemampuan Anda. +1 ${s1.toUpperCase()}.`);
+      } else {
+        ui.addLog(`ULANG TAHUN (${p.age} tahun): Tidak ada perubahan berarti pada kemampuan Anda tahun ini.`);
+      }
+    } else {
+      const decayKeys = ["combat", "tactics"];
+      const growthKeys = ["stewardship", "intrigue", "diplomacy"];
+      if (Math.random() < 0.5) {
+        const dKey = decayKeys[Math.floor(Math.random() * decayKeys.length)];
+        p.stats[dKey] = Math.max(1, p.stats[dKey] - 1);
+        const gKey = growthKeys[Math.floor(Math.random() * growthKeys.length)];
+        p.stats[gKey] += 1;
+        ui.addLog(`ULANG TAHUN (${p.age} tahun): Usia mulai terasa. -1 ${dKey.toUpperCase()}, namun +1 ${gKey.toUpperCase()} dari kebijaksanaan.`);
+      } else {
+        ui.addLog(`ULANG TAHUN (${p.age} tahun): Anda menua dengan tenang tanpa perubahan besar.`);
+      }
+    }
   },
 
   acceptNobleOffer(houseId) {
     const house = state.nobleHouses.find(h => h.id === houseId);
     if (!house) return;
 
-    // Otomatis memutus job lama & mengalihkan ke Karir Ksatria Setia
+    if (house.continent !== state.player.continent) {
+      ui.addLog(`Anda harus berada di ${house.continent === 'essos' ? 'Essos' : 'Westeros'} untuk mengabdi pada ${house.name}.`);
+      return;
+    }
+
     state.player.activeNobleHouse = house.id;
-    state.player.currentJob = "knight_vassal"; 
+    state.player.currentJob = "knight_vassal";
     state.player.jobRankIndex = 0;
     state.player.jobExp = 0;
     state.player.title = house.titleOffer;
     state.player.prestige += 5;
     state.player.reputation += 5;
 
-    ui.addLog(`SUMPAH SETIA: Anda berhenti dari job sebelumnya & resmi diangkat sebagai ${house.titleOffer} di bawah ${house.name}!`);
-    ui.renderTopBar();
-    ui.renderProfile();
-    ui.renderNobleOffers();
-    ui.renderVassalHousePanel();
-    ui.renderJobs();
+    ui.addLog(`SUMPAH SETIA: Anda berhenti dari job sebelumnya & resmi diangkat sebagai ${house.titleOffer} di bawah ${house.name}! Anda kini dapat dipanggil untuk kampanye perang mengikuti alur cerita mereka.`);
+    ui.renderAll();
   },
 
   requestVassalHousePermission() {
@@ -818,16 +1164,13 @@ const game = {
     const houseName = houseNameInput.value.trim();
     const activeHouse = state.nobleHouses.find(h => h.id === state.player.activeNobleHouse);
 
-    // Diberi izin oleh Lord
     state.player.vassalHouseName = houseName;
     state.player.gold -= 150;
     state.player.prestige += 15;
     state.player.title = `Lord of House ${houseName} (Vassal to ${activeHouse.name})`;
 
-    ui.addLog(`IZIN DISETUJUI: Lord ${activeHouse.name} menyetujui pendirian House ${houseName} di bawah panji mereka!`);
-    ui.renderTopBar();
-    ui.renderProfile();
-    ui.renderVassalHousePanel();
+    ui.addLog(`IZIN DISETUJUI: Lord ${activeHouse.name} menyetujui pendirian House ${houseName} di atas tanah Anda!`);
+    ui.renderAll();
   },
 
   selectJob(jobId) {
@@ -838,8 +1181,7 @@ const game = {
     state.player.jobRankIndex = 0;
     state.player.jobExp = 0;
 
-    ui.renderTopBar();
-    ui.renderJobs();
+    ui.renderAll();
     ui.addLog(`Kontrak ditandatangani: Bekerja sebagai ${selectedJob.title}.`);
   },
 
@@ -854,7 +1196,7 @@ const game = {
       if (state.player.jobRankIndex < currentJobObj.ranks.length - 1) {
         state.player.jobRankIndex += 1;
         state.player.jobExp = 0;
-        
+
         let prestigeBonus = state.player.unlockedTalents.includes("t4") ? 10 : 5;
         state.player.prestige += prestigeBonus;
 
@@ -1017,6 +1359,25 @@ const game = {
     });
   },
 
+  checkHouseWarEvents() {
+    const activeId = state.player.activeNobleHouse;
+    if (!activeId) return;
+    const list = houseWarEvents[activeId];
+    if (!list) return;
+
+    list.forEach(evt => {
+      if (!evt._fired && evt.triggerYear === state.date.year && evt.triggerMonth === state.date.month) {
+        evt._fired = true;
+        state.inbox.unshift({
+          ...evt,
+          date: `${state.date.year} AC, M${state.date.month}`,
+          read: false
+        });
+        ui.addLog(`PANGGILAN PERANG DARI LORD ANDA: ${evt.title}`);
+      }
+    });
+  },
+
   openEventModal(index) {
     const evtData = state.inbox[index];
     if (!evtData) return;
@@ -1057,24 +1418,22 @@ const game = {
     state.activeEvent = null;
 
     document.getElementById('event-modal-overlay').classList.add('hidden');
-    ui.renderTopBar();
-    ui.renderProfile();
-    ui.renderJobs();
-    ui.renderNobleOffers();
-    ui.renderVassalHousePanel();
-    ui.renderInbox();
+    ui.renderAll();
   },
 
   nextTurn() {
-    // Advance Date
     state.date.month += 1;
     if (state.date.month > 12) {
       state.date.month = 1;
       state.date.year += 1;
       state.player.age += 1;
+      game.applyAgingGrowth();
     }
 
-    // 1. Hunger & Health Tick
+    if (state.travel.inProgress) {
+      game.processTravel();
+    }
+
     let hungerRate = state.player.unlockedTalents.includes("t1") ? 10 : 15;
     state.player.hunger = Math.min(100, state.player.hunger + hungerRate);
 
@@ -1089,15 +1448,12 @@ const game = {
       return;
     }
 
-    // 2. Economy & Job Progression
     let income = 0;
 
-    // Sewa Tanah
     let landIncome = state.player.landHectares * state.landMarket.rentIncomePerHectare;
     if (state.player.unlockedTalents.includes("t2")) landIncome = Math.floor(landIncome * 1.15);
     income += landIncome;
 
-    // Gaji Pekerjaan Swasta / Ksatria
     if (state.player.currentJob) {
       const activeJob = state.jobs.find(j => j.id === state.player.currentJob);
       if (activeJob) {
@@ -1109,19 +1465,16 @@ const game = {
       }
     }
 
-    // Pendapatan Tambahan Jika Punya House Vassal
     if (state.player.vassalHouseName) {
       state.player.prestige += 2;
     }
 
-    // Upkeep Pasukan
     let baseUpkeep = Math.floor(state.player.men * 0.5);
     let upkeep = state.player.unlockedTalents.includes("t3") ? Math.floor(baseUpkeep * 0.5) : baseUpkeep;
 
     const netGold = income - upkeep;
     state.player.gold += netGold;
 
-    // 3. Research Tick
     if (state.research.active) {
       state.research.progress += 1;
       if (state.research.progress >= state.research.totalMonths) {
@@ -1133,20 +1486,11 @@ const game = {
       }
     }
 
-    // 4. Events
     game.triggerRandomJobEvent();
     game.checkWorldLoreEvents();
+    game.checkHouseWarEvents();
 
-    // Render Refresh
-    ui.renderTopBar();
-    ui.renderProfile();
-    ui.renderNobleOffers();
-    ui.renderVassalHousePanel();
-    ui.renderJobs();
-    ui.renderShop();
-    ui.renderLandPanel();
-    ui.renderResearchAndTalents();
-    ui.renderInbox();
+    ui.renderAll();
 
     ui.addLog(`Ganti bulan. Hasil Bersih Emas: ${netGold >= 0 ? '+' : ''}${netGold} Gold.`);
   }
