@@ -1154,3 +1154,16 @@ body {
   .stat-pill { min-width: 58px; padding: 3px 6px; }
   .stat-val { font-size: 0.72rem; }
 }
+
+/* Trait tags on profile */
+.trait-tag {
+  border-color: var(--vic-gold-mid) !important;
+  background: linear-gradient(180deg, #1a1510 0%, #0f0c09 100%) !important;
+  color: var(--vic-gold-bright) !important;
+  font-weight: 600;
+}
+
+.essos-job-card {
+  border-color: var(--essos-purple) !important;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.15);
+}
