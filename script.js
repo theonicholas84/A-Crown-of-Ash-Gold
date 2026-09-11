@@ -264,8 +264,16 @@ const jobEvents = {
       id: "g2", title: "Perkelahian Kedai Minum", type: "Event Pekerjaan", sender: "Penjaga Distrik",
       desc: "Dua pedagang mabuk berkelahi hebat di kedai, mengancam memecahkan barang dagangan warga sekitar.",
       choices: [
-        { text: "Lerai dengan kekuatan (+1 Combat, +10 EXP)", effect: (p) => { p.stats.combat += 1; game.addJobExp(10); return "Anda melerai perkelahian dengan tegas."; } },
+        { text: "⚔️ DUEL — Lerai dengan kekuatan", effect: (p) => { const r = game.resolveDuel(p, 9, "Pedagang Mabuk", { winPrestige: 1, winCombat: 1, winExp: 15, loseHealth: 8 }); return r; } },
         { text: "Negosiasikan damai (+1 Diplomacy, +10 EXP)", effect: (p) => { p.stats.diplomacy += 1; game.addJobExp(10); return "Kedua pedagang berdamai berkat kata-kata Anda."; } }
+      ]
+    },
+    {
+      id: "g3", title: "Pembunuh Bayaran di Gang", type: "Event Pekerjaan", sender: "Sinyal Patroli",
+      desc: "Anda menemukan seorang assassin yang sedang bersiap membunuh seorang pedagang kaya. Dia menghunus belati ke arah Anda.",
+      choices: [
+        { text: "⚔️ DUEL — Hadapi assassin", effect: (p) => game.resolveDuel(p, 15, "Assassin Bayaran", { winPrestige: 5, winGold: 25, winCombat: 1, winExp: 25, loseHealth: 20 }) },
+        { text: "Panggil bala bantuan (+1 Tactics, +10 EXP)", effect: (p) => { p.stats.tactics += 1; game.addJobExp(10); return "Assassin kabur saat bala bantuan datang, namun Anda mendapat pujian."; } }
       ]
     }
   ],
@@ -307,6 +315,14 @@ const jobEvents = {
         { text: "Terima dan berjaga penuh (+2 Combat, +20 EXP)", effect: (p) => { p.stats.combat += 2; game.addJobExp(20); return "Karavan tiba dengan selamat berkat kewaspadaan Anda."; } },
         { text: "Ambil jalan pintas berisiko (+30 Gold, -10 Health)", effect: (p) => { p.gold += 30; p.health = Math.max(1, p.health - 10); return "Jalan pintas berhasil namun luka tergores di lengan Anda."; } }
       ]
+    },
+    {
+      id: "mc2", title: "Ambush Perampok di Hutan", type: "Event Pekerjaan", sender: "Letnan Free Company",
+      desc: "Perampok menyerang dari semak. Anda harus memimpin perlawanan atau mundur.",
+      choices: [
+        { text: "⚔️ Pimpin serangan balik", effect: (p) => game.resolveDuel(p, 13, "Pemimpin Perampok", { winPrestige: 4, winGold: 22, winCombat: 1, winExp: 20, loseHealth: 16 }) },
+        { text: "Mundur teratur (+1 Tactics, +10 EXP)", effect: (p) => { p.stats.tactics += 1; game.addJobExp(10); return "Anda menyelamatkan sebagian karavan dengan mundur cerdas."; } }
+      ]
     }
   ],
   knight_vassal: [
@@ -314,7 +330,7 @@ const jobEvents = {
       id: "kv1", title: "Insiden Bandit di Desa Lord", type: "Event Ksatria", sender: "Utusan Desa Lord",
       desc: "Kelompok penjarah menyerang batas tanah milik Lord Anda. Sebagai ksatria sworn, Anda diminta memimpin pasukan penumpasan.",
       choices: [
-        { text: "Pimpin serangan depan (+10 Prestige, +30 EXP, -10 Health)", effect: (p) => { p.prestige += 10; game.addJobExp(30); p.health = Math.max(1, p.health - 10); return "Anda menang dalam duel pimpinan bandit!"; } },
+        { text: "⚔️ DUEL — Pimpin serangan depan", effect: (p) => game.resolveDuel(p, 14, "Pemimpin Bandit", { winPrestige: 10, winExp: 30, winCombat: 1, loseHealth: 14 }) },
         { text: "Gunakan taktik penyergapan (+15 EXP, +2 Tactics)", effect: (p) => { game.addJobExp(15); p.stats.tactics += 2; return "Musuh terkepung tanpa perlawanan berarti."; } }
       ]
     },
@@ -322,8 +338,16 @@ const jobEvents = {
       id: "kv2", title: "Turnamen Pengawal Kastil", type: "Event Ksatria", sender: "Master of Games",
       desc: "Turnamen pedang digelar untuk menghibur para bangsawan yang berkunjung ke kastil Lord Anda.",
       choices: [
-        { text: "Ikut bertanding (+2 Combat, +8 Prestige)", effect: (p) => { p.stats.combat += 2; p.prestige += 8; return "Anda menjuarai turnamen di hadapan seluruh istana!"; } },
+        { text: "⚔️ DUEL TURNAMEN — Bertanding di arena", effect: (p) => game.resolveDuel(p, 13, "Lawanan Turnamen", { winPrestige: 8, winCombat: 2, winGold: 15, loseHealth: 12, losePrestige: 1 }) },
         { text: "Jaga keamanan arena saja (+10 Gold)", effect: (p) => { p.gold += 10; return "Turnamen berjalan aman tanpa insiden."; } }
+      ]
+    },
+    {
+      id: "kv3", title: "Tantangan Kehormatan dari Ksatria Rival", type: "Event Ksatria", sender: "Utusan Kastil",
+      desc: "Seorang ksatria dari House rival menantang Anda duel publik demi kehormatan Lord Anda.",
+      choices: [
+        { text: "⚔️ TERIMA DUEL KEHORMATAN", effect: (p) => game.resolveDuel(p, 16, "Ksatria Rival", { winPrestige: 12, winCombat: 1, winExp: 25, loseHealth: 20, losePrestige: 5 }) },
+        { text: "Tolak demi menghindari pertumpahan darah (+1 Diplomacy)", effect: (p) => { p.stats.diplomacy += 1; p.reputation -= 2; return "Beberapa orang menganggap Anda pengecut, namun Lord menghargai kebijaksanaan Anda."; } }
       ]
     }
   ]
@@ -403,7 +427,10 @@ const houseWarEvents = {
     { triggerYear: 298, triggerMonth: 11, id: "hw-stark-1", title: "PANGGILAN PERANG: Berbaris Bersama Robb Stark", type: "Panggilan Perang", sender: "Kastelan Winterfell",
       desc: "Robb Stark menyatakan perang atas eksekusi ayahnya. Sebagai ksatria sumpah Stark, Anda dipanggil ikut berbaris ke selatan.",
       choices: [
-        { text: "Maju ke garis depan (+15 Prestige, +30 EXP, -15 Health)", effect: (p) => { p.prestige += 15; game.addJobExp(30); p.health = Math.max(1, p.health - 15); return "Anda bertempur gagah di bawah panji Direwolf."; } },
+        { text: "⚔️ MAJU KE GARIS DEPAN (Duel & Pertempuran)", effect: (p) => {
+          if (p.men >= 5) return game.resolveBattle(p, 18, "Pasukan Lannister", { winPrestige: 15, winGold: 30, winCombat: 1 });
+          return game.resolveDuel(p, 15, "Kapten Lannister", { winPrestige: 12, winExp: 30, winCombat: 1, loseHealth: 18 });
+        } },
         { text: "Jaga logistik pasukan (+15 EXP, +1 Stewardship)", effect: (p) => { game.addJobExp(15); p.stats.stewardship += 1; return "Pasokan pasukan Utara tetap terjaga berkat kerja Anda."; } }
       ] },
     { triggerYear: 299, triggerMonth: 1, id: "hw-stark-2", title: "Pertempuran Whispering Wood", type: "Panggilan Perang", sender: "Perwira Stark",
@@ -491,10 +518,15 @@ const houseWarEvents = {
    -------------------------------------------------------------------------- */
 const travelEvents = [
   { id: "tr1", title: "Penyergapan Bandit di Jalan", type: "Event Perjalanan", sender: "Pengawal Rombongan",
-    desc: "Sekelompok bandit menghadang rombongan Anda di tengah perjalanan.",
+    desc: "Sekelompok bandit menghadang rombongan Anda di tengah perjalanan. Pedang sudah terhunus.",
     choices: [
-      { text: "Lawan mereka (+1 Combat, -10 Health)", effect: (p) => { p.stats.combat += 1; p.health = Math.max(1, p.health - 10); return "Bandit berhasil dipukul mundur setelah pertarungan sengit."; } },
-      { text: "Bayar upeti jalan (-15 Gold)", effect: (p) => { p.gold = Math.max(0, p.gold - 15); return "Anda membayar upeti agar perjalanan tidak terganggu."; } }
+      { text: "⚔️ DUEL — Lawan kepala bandit!", effect: (p) => game.resolveDuel(p, 12, "Kepala Bandit", { winPrestige: 3, winGold: 18, winCombat: 1, loseHealth: 18 }) },
+      { text: "Bayar upeti jalan (-15 Gold)", effect: (p) => { p.gold = Math.max(0, p.gold - 15); return "Anda membayar upeti agar perjalanan tidak terganggu."; } },
+      { text: "Coba kabur (-5 Health jika gagal)", effect: (p) => {
+        if (Math.random() < 0.55) return "Anda berhasil menyelinap lewat semak dan menghindari bentrokan.";
+        p.health = Math.max(1, p.health - 5);
+        return "Anda tertangkap saat kabur dan mendapat beberapa luka.";
+      }}
     ] },
   { id: "tr2", title: "Badai di Laut Sempit", type: "Event Perjalanan", sender: "Kapten Kapal",
     desc: "Kapal Anda diterjang badai besar saat menyeberangi Laut Sempit menuju Essos.",
@@ -507,6 +539,12 @@ const travelEvents = [
     choices: [
       { text: "Beli barang dagangan (-10 Gold, +1 Stewardship)", effect: (p) => { p.gold = Math.max(0, p.gold - 10); p.stats.stewardship += 1; return "Anda mendapat wawasan baru dari perdagangan di jalan."; } },
       { text: "Lewati saja", effect: () => "Anda melanjutkan perjalanan tanpa singgah." }
+    ] },
+  { id: "tr4", title: "Tantangan Duel di Pinggir Jalan", type: "Event Perjalanan", sender: "Ksatria Pengembara",
+    desc: "Seorang ksatria berbaju zirah menantang Anda duel demi kehormatan di pinggir Kingsroad. Penonton sudah berkumpul.",
+    choices: [
+      { text: "⚔️ TERIMA DUEL", effect: (p) => game.resolveDuel(p, 14, "Ksatria Pengembara", { winPrestige: 6, winGold: 10, winCombat: 1, loseHealth: 22, losePrestige: 2 }) },
+      { text: "Tolak dengan sopan (+1 Diplomacy)", effect: (p) => { p.stats.diplomacy += 1; return "Ksatria menghormati penolakan Anda dan melanjutkan perjalanan."; } }
     ] }
 ];
 
@@ -531,6 +569,8 @@ const ui = {
     document.getElementById('res-prestige').innerText = state.player.prestige;
     document.getElementById('res-reputation').innerText = state.player.reputation;
     document.getElementById('res-land').innerText = `${state.player.landHectares} Ha`;
+    const troopsEl = document.getElementById('res-troops');
+    if (troopsEl) troopsEl.innerText = state.player.men;
     document.getElementById('res-talent-pts').innerText = state.player.talentPoints;
     document.getElementById('res-date').innerText = `${state.date.year} AC, M${state.date.month}`;
 
@@ -955,6 +995,35 @@ const ui = {
     logBox.prepend(entry);
   },
 
+  renderMilitary() {
+    const dash = document.getElementById('military-dashboard');
+    if (!dash) return;
+    const p = state.player;
+    const upkeep = p.unlockedTalents.includes('t3') ? Math.floor(p.men * 0.25) : Math.floor(p.men * 0.5);
+    dash.innerHTML = `
+      <div class="v-card" style="margin:0;">
+        <div class="card-header">KEKUATAN PASUKAN</div>
+        <div class="troop-stat-line"><span>Prajurit Aktif</span><strong class="military-color">${p.men}</strong></div>
+        <div class="troop-stat-line"><span>Biaya Upkeep / Bulan</span><strong>${upkeep} Gold</strong></div>
+        <div class="troop-stat-line"><span>Combat / Tactics</span><strong>${p.stats.combat} / ${p.stats.tactics}</strong></div>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin-top:10px;">Pasukan digunakan untuk skirmish, kampanye perang House, dan menjaga tanah. Kalahkan lawan di medan tempur untuk Prestige & Gold.</p>
+        <div class="military-action-row">
+          <button class="v-btn" onclick="game.recruitMen(5, 25)">Rekrut 5 Prajurit (25G)</button>
+          <button class="v-btn" onclick="game.recruitMen(10, 45)">Rekrut 10 Prajurit (45G)</button>
+          <button class="v-btn" onclick="game.trainTroops()" ${p.men < 1 || p.gold < 10 ? 'disabled' : ''}>Latih Pasukan (10G)</button>
+        </div>
+      </div>
+      <div class="v-card" style="margin:0;">
+        <div class="card-header">AKSI PERANG & SKIRMISH</div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Pimpin pasukan ke medan tempur kecil. Hasil ditentukan oleh jumlah prajurit + Combat & Tactics + keberuntungan dadu.</p>
+        <button class="skirmish-btn" onclick="game.startSkirmish()" ${p.men < 3 || p.health < 25 ? 'disabled' : ''}>⚔️ Mulai Skirmish (min. 3 prajurit)</button>
+        <div style="margin-top:14px; font-size:0.75rem; color:var(--text-muted);">
+          <strong style="color:var(--vic-gold-bright);">Tips:</strong> Naikkan Combat lewat duel di event pekerjaan / perjalanan. Talent "Kepemimpinan Veteran" mengurangi upkeep 50%.
+        </div>
+      </div>
+    `;
+  },
+
   renderAll() {
     ui.renderTopBar();
     ui.renderProfile();
@@ -967,6 +1036,7 @@ const ui = {
     ui.renderProvinces();
     ui.renderTravel();
     ui.renderInbox();
+    ui.renderMilitary();
   }
 };
 
@@ -1327,7 +1397,110 @@ const game = {
     state.player.men += amount;
     ui.renderTopBar();
     ui.renderVassalHousePanel();
+    ui.renderMilitary();
     ui.addLog(`Merekrut ${amount} prajurit.`);
+  },
+
+  /**
+   * Resolve a 1v1 duel. Returns narrative string for event log / choice result.
+   * enemyPower ~ 8-20 typical. rewards object keys optional:
+   * winPrestige, winGold, winCombat, winExp, winTactics, loseHealth, losePrestige
+   */
+  resolveDuel(p, enemyPower, enemyName, rewards = {}) {
+    const playerBase = p.stats.combat + Math.floor(p.stats.tactics * 0.5);
+    const playerRoll = Math.floor(Math.random() * 10) + 1;
+    const enemyRoll = Math.floor(Math.random() * 10) + 1;
+    const playerTotal = playerBase + playerRoll;
+    const enemyTotal = enemyPower + enemyRoll;
+    const won = playerTotal >= enemyTotal;
+
+    let dmg = 0;
+    if (won) {
+      dmg = Math.max(3, Math.floor(8 + (enemyTotal - playerTotal) * 0.4 + Math.random() * 6));
+      p.health = Math.max(1, p.health - dmg);
+      if (rewards.winPrestige) p.prestige += rewards.winPrestige;
+      if (rewards.winGold) p.gold += rewards.winGold;
+      if (rewards.winCombat) p.stats.combat += rewards.winCombat;
+      if (rewards.winTactics) p.stats.tactics += rewards.winTactics;
+      if (rewards.winExp) game.addJobExp(rewards.winExp);
+      return `⚔️ DUEL MENANG vs ${enemyName}! (Anda ${playerTotal} vs ${enemyTotal}). Luka ringan -${dmg} HP. ${rewards.winPrestige ? '+' + rewards.winPrestige + ' Prestige. ' : ''}${rewards.winGold ? '+' + rewards.winGold + ' Gold. ' : ''}`;
+    } else {
+      dmg = rewards.loseHealth || Math.max(10, Math.floor(14 + (enemyTotal - playerTotal) * 0.6 + Math.random() * 8));
+      p.health = Math.max(1, p.health - dmg);
+      if (rewards.losePrestige) p.prestige = Math.max(0, p.prestige - rewards.losePrestige);
+      return `⚔️ DUEL KALAH vs ${enemyName}... (Anda ${playerTotal} vs ${enemyTotal}). Luka parah -${dmg} HP. ${rewards.losePrestige ? '-' + rewards.losePrestige + ' Prestige. ' : ''}Anda masih berdiri, tapi harga kehormatan mahal.`;
+    }
+  },
+
+  /**
+   * Skirmish / small battle using men-at-arms. Scales with troop count.
+   */
+  resolveBattle(p, enemyMen, enemyName, rewards = {}) {
+    const playerForce = p.men + Math.floor(p.stats.combat * 0.8) + Math.floor(p.stats.tactics * 0.6) + Math.floor(Math.random() * 8);
+    const enemyForce = enemyMen + Math.floor(Math.random() * 10);
+    const won = playerForce >= enemyForce;
+    let menLost = 0;
+    let dmg = 0;
+
+    if (won) {
+      menLost = Math.min(p.men, Math.max(0, Math.floor(enemyMen * 0.15 + Math.random() * 3)));
+      dmg = Math.max(4, Math.floor(6 + Math.random() * 8));
+      p.men = Math.max(0, p.men - menLost);
+      p.health = Math.max(1, p.health - dmg);
+      if (rewards.winPrestige) p.prestige += rewards.winPrestige;
+      if (rewards.winGold) p.gold += rewards.winGold;
+      if (rewards.winCombat) p.stats.combat += rewards.winCombat;
+      return `🛡️ PERTEMPURAN MENANG vs ${enemyName}! (Kekuatan ${playerForce} vs ${enemyForce}). Kehilangan ${menLost} prajurit, -${dmg} HP. ${rewards.winPrestige ? '+' + rewards.winPrestige + ' Prestige. ' : ''}${rewards.winGold ? '+' + rewards.winGold + ' Gold.' : ''}`;
+    } else {
+      menLost = Math.min(p.men, Math.max(1, Math.floor(p.men * 0.25 + enemyMen * 0.1)));
+      dmg = Math.max(12, Math.floor(15 + Math.random() * 12));
+      p.men = Math.max(0, p.men - menLost);
+      p.health = Math.max(1, p.health - dmg);
+      if (rewards.losePrestige) p.prestige = Math.max(0, p.prestige - rewards.losePrestige);
+      return `🛡️ PERTEMPURAN KALAH vs ${enemyName}... (Kekuatan ${playerForce} vs ${enemyForce}). Kehilangan ${menLost} prajurit, -${dmg} HP. Mundur untuk bertahan hidup.`;
+    }
+  },
+
+  startSkirmish() {
+    if (state.player.men < 3) {
+      ui.addLog("Anda butuh minimal 3 prajurit untuk memulai skirmish.");
+      return;
+    }
+    if (state.player.health < 25) {
+      ui.addLog("Kesehatan terlalu rendah untuk memimpin skirmish.");
+      return;
+    }
+    const enemies = [
+      { name: "Bandit Hutan", men: 8 + Math.floor(Math.random() * 6), prestige: 4, gold: 20 },
+      { name: "Perampok Kingsroad", men: 10 + Math.floor(Math.random() * 8), prestige: 5, gold: 28 },
+      { name: "Pemburu Bayaran", men: 12 + Math.floor(Math.random() * 5), prestige: 6, gold: 35 },
+      { name: "Pemberontak Desa", men: 7 + Math.floor(Math.random() * 7), prestige: 3, gold: 15 }
+    ];
+    const foe = enemies[Math.floor(Math.random() * enemies.length)];
+    const result = game.resolveBattle(state.player, foe.men, foe.name, {
+      winPrestige: foe.prestige,
+      winGold: foe.gold,
+      winCombat: 1,
+      losePrestige: 2
+    });
+    ui.addLog(result);
+    ui.renderAll();
+  },
+
+  trainTroops() {
+    if (state.player.men < 1) {
+      ui.addLog("Tidak ada prajurit untuk dilatih.");
+      return;
+    }
+    if (state.player.gold < 10) {
+      ui.addLog("Butuh 10 Gold untuk sesi latihan.");
+      return;
+    }
+    state.player.gold -= 10;
+    state.player.stats.tactics += 1;
+    if (Math.random() < 0.4) state.player.stats.combat += 1;
+    ui.addLog("Latihan selesai. Pasukan lebih disiplin (+1 Tactics" + (Math.random() < 0.4 ? ", +1 Combat" : "") + ").");
+    ui.renderAll();
   },
 
   triggerRandomJobEvent() {
