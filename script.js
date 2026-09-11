@@ -34,7 +34,9 @@ const state = {
       diplomacy: 5
     },
     inventory: {},
-    unlockedTalents: []
+    unlockedTalents: [],
+    traits: [],
+    mercenaryCompany: null
   },
   landMarket: {
     pricePerHectare: 25,
@@ -129,6 +131,40 @@ const state = {
     { id: "t4", name: "Negosiator Ulung", cost: 2, desc: "Melipatgandakan Prestige dari promosi atau misi.", req: "t2" },
     { id: "t5", name: "Telinga Dinding", cost: 1, desc: "+2 Intrigue dan meningkatkan peluang event rahasia.", req: null },
     { id: "t6", name: "Diplomasi Istana", cost: 2, desc: "+2 Diplomacy dan menurunkan syarat Prestige House Noble sebesar 2 Pt.", req: "t5" }
+  ],
+
+  // Free Companies — pilihan saat masuk karier Tentara Bayaran
+  mercenaryCompanies: [
+    { id: "golden_company", name: "Golden Company", motto: "Beneath the Gold, the Bitter Steel",
+      desc: "Perusahaan bayaran paling legendaris dari Essos. Disiplin tinggi, bayaran mewah.",
+      bonusCombat: 2, bonusTactics: 1, incomeMult: 1.25, startMen: 3, repOnJoin: 2 },
+    { id: "second_sons", name: "Second Sons", motto: "We Fight for Coin",
+      desc: "Sellsword klasik. Fleksibel, sering terlibat intrik politik Free Cities.",
+      bonusCombat: 1, bonusIntrigue: 1, incomeMult: 1.15, startMen: 2, repOnJoin: 0 },
+    { id: "windblown", name: "Windblown", motto: "The Company of the Cat",
+      desc: "Perusahaan beraneka ragam dengan kapten eksentrik. Cepat bergerak, bayaran sedang.",
+      bonusTactics: 2, incomeMult: 1.1, startMen: 2, repOnJoin: 1 },
+    { id: "stormcrows", name: "Stormcrows", motto: "Three Heads, One Company",
+      desc: "Dikenal di Slaver's Bay. Tiga kapten, gaya bertempur agresif.",
+      bonusCombat: 2, incomeMult: 1.2, startMen: 4, repOnJoin: -1 },
+    { id: "brave_companions", name: "Brave Companions (Bloody Mummers)", motto: "Fear and Blood",
+      desc: "Ditakuti karena kekejaman. Bayaran tinggi, reputasi buruk.",
+      bonusCombat: 3, incomeMult: 1.3, startMen: 3, repOnJoin: -5 },
+    { id: "free_company_generic", name: "Free Company Lokal", motto: "Coin is Coin",
+      desc: "Perusahaan bayaran kecil di Westeros. Mudah masuk, bayaran standar.",
+      bonusCombat: 1, incomeMult: 1.0, startMen: 1, repOnJoin: 0 }
+  ],
+
+  // Traits yang bisa diperoleh dari keberhasilan
+  traitDefs: [
+    { id: "duelist", name: "Duelist Berpengalaman", desc: "+1 Combat permanen saat membuka. Menang duel lebih mudah.", trigger: "duel_wins" },
+    { id: "battle_scarred", name: "Berbekas Luka Perang", desc: "+10 Max Health. Bertahan lebih lama di medan tempur.", trigger: "battle_wins" },
+    { id: "trusted_sword", name: "Pedang Tepercaya", desc: "+2 Reputasi saat membuka. Lord lebih mudah menerima.", trigger: "house_service" },
+    { id: "honest_steward", name: "Pengelola Jujur", desc: "+1 Stewardship. Pendapatan sewa +10%.", trigger: "good_scribe" },
+    { id: "shadow_whisperer", name: "Bisikan Bayangan", desc: "+1 Intrigue. Peluang event rahasia meningkat.", trigger: "good_informant" },
+    { id: "essos_voyager", name: "Pengelana Essos", desc: "Sudah menyeberangi Laut Sempit. +1 Diplomacy.", trigger: "essos_visit" },
+    { id: "merchant_prince", name: "Pangeran Dagang", desc: "+15% Gold dari pekerjaan. Membuka lewat perdagangan sukses.", trigger: "merchant_success" },
+    { id: "war_veteran", name: "Veteran Perang", desc: "+1 Tactics & +1 Combat. Dari kampanye House.", trigger: "war_campaign" }
   ],
 
   shopItems: [
@@ -257,7 +293,7 @@ const jobEvents = {
       desc: "Seorang penyelundup anggur Lysene menawarkan 20 Gold agar Anda pura-pura tidak melihat barang ilegalnya.",
       choices: [
         { text: "Terima sogokan (+20 Gold, -2 Prestige, -5 Reputasi)", effect: (p) => { p.gold += 20; p.prestige -= 2; p.reputation -= 5; return "Anda mengantongi emas dan membiarkan penyelundup lolos."; } },
-        { text: "Tangkap atas nama Raja (+3 Prestige, +5 Reputasi, +15 EXP)", effect: (p) => { p.prestige += 3; p.reputation += 5; game.addJobExp(15); return "Penyelundup diseret ke penjara ibukota."; } }
+        { text: "Tangkap atas nama Raja (+3 Prestige, +5 Reputasi, +15 EXP)", effect: (p) => { p.prestige += 3; p.reputation += 5; game.addJobExp(15); return "Penyelundup diseret ke penjara ibukota. Nama Anda disebut sebagai penjaga yang jujur."; } }
       ]
     },
     {
@@ -292,7 +328,7 @@ const jobEvents = {
       id: "s1", title: "Kecurangan Pajak Gandum", type: "Event Pekerjaan", sender: "Kantor Audit High Lord",
       desc: "Audit pembukuan panen menemukan manipulasi laporan oleh juru tulis lokal yang menyembunyikan 30 Gold.",
       choices: [
-        { text: "Laporkan kecurangan (+5 Prestige, +5 Reputasi, +20 EXP)", effect: (p) => { p.prestige += 5; p.reputation += 5; game.addJobExp(20); return "Lord memberi Anda penghargaan atas kejujuran."; } },
+        { text: "Laporkan kecurangan (+5 Prestige, +5 Reputasi, +20 EXP)", effect: (p) => { p.prestige += 5; p.reputation += 5; game.addJobExp(20); game.grantTrait("honest_steward"); return "Lord memberi Anda penghargaan atas kejujuran. Trait Pengelola Jujur terbuka."; } },
         { text: "Peras juru tulis tersebut (+15 Gold)", effect: (p) => { p.gold += 15; return "Juru tulis menyerahkan 15 Gold secara diam-diam."; } }
       ]
     }
@@ -303,7 +339,7 @@ const jobEvents = {
       desc: "Anda mendengar bisikan tentang rencana pemindahan pasukan rahasia salah satu House Agung.",
       choices: [
         { text: "Jual info ke pihak tertinggi (+25 Gold, -3 Reputasi)", effect: (p) => { p.gold += 25; p.reputation -= 3; return "Emas berpindah tangan dalam kegelapan lorong kota."; } },
-        { text: "Simpan untuk Lord Anda (+2 Intrigue, +15 EXP)", effect: (p) => { p.stats.intrigue += 2; game.addJobExp(15); return "Informasi berharga tersimpan rapi untuk kebutuhan mendesak."; } }
+        { text: "Simpan untuk Lord Anda (+2 Intrigue, +15 EXP, +2 Reputasi)", effect: (p) => { p.stats.intrigue += 2; game.addJobExp(15); game.addReputation(2, "Kesetiaan kepada Lord"); game.grantTrait("shadow_whisperer"); return "Informasi berharga tersimpan rapi. Trait Bisikan Bayangan terbuka."; } }
       ]
     }
   ],
@@ -613,6 +649,26 @@ const ui = {
       row.innerHTML = `<span class="attr-name">${key}</span><span class="attr-badge ${badgeClass}">${value}</span>`;
       container.appendChild(row);
     }
+
+    // Traits display di inventory area
+    const inv = document.getElementById('inventory-list');
+    if (inv) {
+      const traits = state.player.traits || [];
+      let html = '';
+      if (traits.length === 0) {
+        html = '<span class="empty-tag">Belum ada trait — selesaikan duel, misi, atau perjalanan untuk membukanya</span>';
+      } else {
+        traits.forEach(tid => {
+          const def = state.traitDefs.find(t => t.id === tid);
+          if (def) html += `<span class="inventory-tag trait-tag" title="${def.desc}">🏅 ${def.name}</span>`;
+        });
+      }
+      if (state.player.mercenaryCompany) {
+        const co = state.mercenaryCompanies.find(c => c.id === state.player.mercenaryCompany);
+        if (co) html += `<span class="inventory-tag" style="border-color:var(--fm-red-accent);">⚔️ ${co.name}</span>`;
+      }
+      inv.innerHTML = html;
+    }
   },
 
   renderNobleOffers() {
@@ -730,12 +786,21 @@ const ui = {
       const houseTag = state.player.activeNobleHouse && currentJobObj.id === 'knight_vassal'
         ? `<span class="campaign-banner">Alur Perang: ${state.nobleHouses.find(h => h.id === state.player.activeNobleHouse).name}</span>`
         : '';
+      let companyTag = '';
+      let incomeDisplay = currentRank.income;
+      if (currentJobObj.id === 'mercenary' && state.player.mercenaryCompany) {
+        const co = state.mercenaryCompanies.find(c => c.id === state.player.mercenaryCompany);
+        if (co) {
+          companyTag = `<span class="campaign-banner" style="border-color:var(--fm-red-accent);background:linear-gradient(180deg,#2a0a0a,#150404);">${co.name}</span>`;
+          incomeDisplay = Math.floor(currentRank.income * (co.incomeMult || 1));
+        }
+      }
 
       activePanel.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div>
-            <h3 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">${currentJobObj.title} — ${currentRank.name} ${houseTag}</h3>
-            <div style="font-size:0.75rem; color:var(--fm-green-accent);">Gaji Bulanan: +${currentRank.income} Gold</div>
+            <h3 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">${currentJobObj.title} — ${currentRank.name} ${houseTag}${companyTag}</h3>
+            <div style="font-size:0.75rem; color:var(--fm-green-accent);">Gaji Bulanan: +${incomeDisplay} Gold</div>
           </div>
         </div>
         <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px;">PROGRES PROMOSI PEKERJAAN</div>
@@ -1157,14 +1222,15 @@ const game = {
 
       if (state.player.continent === 'essos' && !state.player.hasVisitedEssos) {
         state.player.hasVisitedEssos = true;
+        game.grantTrait("essos_voyager");
         state.inbox.unshift({
           id: `essos-arrival-${Date.now()}`,
           title: "Menginjakkan Kaki di Essos",
           sender: "Kapten Kapal Dagang",
           type: "Peristiwa Perjalanan",
           date: `${state.date.year} AC, M${state.date.month}`,
-          desc: "Anda kini berada di seberang Laut Sempit. Kabar tentang Daenerys Targaryen, Ibu Naga, terdengar di seluruh Free Cities. Jika berminat, Anda dapat menawarkan pengabdian kepadanya melalui menu Tawaran Great Houses.",
-          choices: [{ text: "Pahami Situasi", effect: () => "Petualangan baru menanti di tanah asing ini." }],
+          desc: "Anda kini berada di seberang Laut Sempit. Kabar tentang Daenerys Targaryen, Ibu Naga, terdengar di seluruh Free Cities. Jika berminat, Anda dapat menawarkan pengabdian kepadanya melalui menu Tawaran Great Houses (hanya muncul saat Anda berada di Essos).",
+          choices: [{ text: "Pahami Situasi", effect: () => "Petualangan baru menanti di tanah asing ini. Trait Pengelana Essos terbuka." }],
           read: false
         });
       }
@@ -1216,9 +1282,12 @@ const game = {
     state.player.currentJob = "knight_vassal";
     state.player.jobRankIndex = 0;
     state.player.jobExp = 0;
+    state.player.mercenaryCompany = null;
     state.player.title = house.titleOffer;
     state.player.prestige += 5;
     state.player.reputation += 5;
+    game.grantTrait("trusted_sword");
+    if (house.id === "targaryen") game.grantTrait("essos_voyager");
 
     ui.addLog(`SUMPAH SETIA: Anda berhenti dari job sebelumnya & resmi diangkat sebagai ${house.titleOffer} di bawah ${house.name}! Anda kini dapat dipanggil untuk kampanye perang mengikuti alur cerita mereka.`);
     ui.renderAll();
@@ -1247,13 +1316,75 @@ const game = {
     const selectedJob = state.jobs.find(j => j.id === jobId);
     if (!selectedJob) return;
 
+    // Jika memilih Tentara Bayaran, tampilkan pilihan Free Company dulu
+    if (jobId === "mercenary") {
+      game.showMercenaryCompanyPicker();
+      return;
+    }
+
     state.player.currentJob = jobId;
     state.player.jobRankIndex = 0;
     state.player.jobExp = 0;
+    state.player.mercenaryCompany = null;
 
     ui.renderAll();
     ui.addLog(`Kontrak ditandatangani: Bekerja sebagai ${selectedJob.title}.`);
   },
+
+  showMercenaryCompanyPicker() {
+    // Pakai event modal sebagai pemilih company
+    const overlay = document.getElementById('event-modal-overlay');
+    document.getElementById('modal-event-sender').innerText = "FREE COMPANIES";
+    document.getElementById('modal-event-title').innerText = "Pilih Perusahaan Bayaran";
+    document.getElementById('modal-event-desc').innerText =
+      "Beberapa Free Company membuka rekrutmen. Pilih satu yang sesuai gaya bertempur dan moral Anda. Pilihan ini memengaruhi bonus atribut, pendapatan, dan reputasi.";
+
+    const box = document.getElementById('modal-event-choices');
+    box.innerHTML = '';
+    state.mercenaryCompanies.forEach(co => {
+      const btn = document.createElement('button');
+      btn.className = 'v-btn choice-btn';
+      const bits = [];
+      if (co.bonusCombat) bits.push('+' + co.bonusCombat + ' Combat');
+      if (co.bonusTactics) bits.push('+' + co.bonusTactics + ' Tactics');
+      if (co.bonusIntrigue) bits.push('+' + co.bonusIntrigue + ' Intrigue');
+      bits.push('Pendapatan x' + co.incomeMult);
+      if (co.startMen) bits.push('+' + co.startMen + ' prajurit');
+      if (co.repOnJoin) bits.push((co.repOnJoin > 0 ? '+' : '') + co.repOnJoin + ' Reputasi');
+      btn.innerHTML = `<strong>${co.name}</strong><br><span style="font-size:0.75rem;color:var(--text-muted)">"${co.motto}" — ${co.desc}</span><br><span style="font-size:0.72rem;color:var(--fm-green-accent)">${bits.join(' · ')}</span>`;
+      btn.onclick = () => game.joinMercenaryCompany(co.id);
+      box.appendChild(btn);
+    });
+    const cancel = document.createElement('button');
+    cancel.className = 'v-btn choice-btn';
+    cancel.innerText = 'Batal — kembali ke daftar pekerjaan';
+    cancel.onclick = () => {
+      overlay.classList.add('hidden');
+    };
+    box.appendChild(cancel);
+    overlay.classList.remove('hidden');
+  },
+
+  joinMercenaryCompany(companyId) {
+    const co = state.mercenaryCompanies.find(c => c.id === companyId);
+    if (!co) return;
+
+    state.player.currentJob = "mercenary";
+    state.player.jobRankIndex = 0;
+    state.player.jobExp = 0;
+    state.player.mercenaryCompany = companyId;
+
+    if (co.bonusCombat) state.player.stats.combat += co.bonusCombat;
+    if (co.bonusTactics) state.player.stats.tactics += co.bonusTactics;
+    if (co.bonusIntrigue) state.player.stats.intrigue += co.bonusIntrigue;
+    if (co.startMen) state.player.men += co.startMen;
+    if (co.repOnJoin) state.player.reputation += co.repOnJoin;
+
+    document.getElementById('event-modal-overlay').classList.add('hidden');
+    ui.renderAll();
+    ui.addLog(`Anda bergabung dengan ${co.name} ("${co.motto}"). ${co.startMen ? '+' + co.startMen + ' prajurit. ' : ''}Siap menerima kontrak bayaran.`);
+  },
+
 
   addJobExp(amount) {
     if (!state.player.currentJob) return;
@@ -1269,8 +1400,9 @@ const game = {
 
         let prestigeBonus = state.player.unlockedTalents.includes("t4") ? 10 : 5;
         state.player.prestige += prestigeBonus;
+        game.addReputation(3, "Promosi jabatan");
 
-        ui.addLog(`PROMOSI! Anda naik pangkat menjadi ${currentJobObj.ranks[state.player.jobRankIndex].name}! (+${prestigeBonus} Prestige)`);
+        ui.addLog(`PROMOSI! Anda naik pangkat menjadi ${currentJobObj.ranks[state.player.jobRankIndex].name}! (+${prestigeBonus} Prestige, +3 Reputasi)`);
       }
     }
   },
@@ -1407,7 +1539,9 @@ const game = {
    * winPrestige, winGold, winCombat, winExp, winTactics, loseHealth, losePrestige
    */
   resolveDuel(p, enemyPower, enemyName, rewards = {}) {
-    const playerBase = p.stats.combat + Math.floor(p.stats.tactics * 0.5);
+    // Trait duelist memberi sedikit keunggulan
+    const duelBonus = p.traits.includes("duelist") ? 2 : 0;
+    const playerBase = p.stats.combat + Math.floor(p.stats.tactics * 0.5) + duelBonus;
     const playerRoll = Math.floor(Math.random() * 10) + 1;
     const enemyRoll = Math.floor(Math.random() * 10) + 1;
     const playerTotal = playerBase + playerRoll;
@@ -1423,6 +1557,10 @@ const game = {
       if (rewards.winCombat) p.stats.combat += rewards.winCombat;
       if (rewards.winTactics) p.stats.tactics += rewards.winTactics;
       if (rewards.winExp) game.addJobExp(rewards.winExp);
+      // Reputasi dari kemenangan duel
+      game.addReputation(1, "Menang duel publik");
+      p._duelWins = (p._duelWins || 0) + 1;
+      if (p._duelWins >= 3) game.grantTrait("duelist");
       return `⚔️ DUEL MENANG vs ${enemyName}! (Anda ${playerTotal} vs ${enemyTotal}). Luka ringan -${dmg} HP. ${rewards.winPrestige ? '+' + rewards.winPrestige + ' Prestige. ' : ''}${rewards.winGold ? '+' + rewards.winGold + ' Gold. ' : ''}`;
     } else {
       dmg = rewards.loseHealth || Math.max(10, Math.floor(14 + (enemyTotal - playerTotal) * 0.6 + Math.random() * 8));
@@ -1450,6 +1588,10 @@ const game = {
       if (rewards.winPrestige) p.prestige += rewards.winPrestige;
       if (rewards.winGold) p.gold += rewards.winGold;
       if (rewards.winCombat) p.stats.combat += rewards.winCombat;
+      game.addReputation(2, "Kemenangan di medan tempur");
+      p._battleWins = (p._battleWins || 0) + 1;
+      if (p._battleWins >= 2) game.grantTrait("battle_scarred");
+      if (rewards.winPrestige && rewards.winPrestige >= 10) game.grantTrait("war_veteran");
       return `🛡️ PERTEMPURAN MENANG vs ${enemyName}! (Kekuatan ${playerForce} vs ${enemyForce}). Kehilangan ${menLost} prajurit, -${dmg} HP. ${rewards.winPrestige ? '+' + rewards.winPrestige + ' Prestige. ' : ''}${rewards.winGold ? '+' + rewards.winGold + ' Gold.' : ''}`;
     } else {
       menLost = Math.min(p.men, Math.max(1, Math.floor(p.men * 0.25 + enemyMen * 0.1)));
@@ -1498,9 +1640,43 @@ const game = {
     }
     state.player.gold -= 10;
     state.player.stats.tactics += 1;
-    if (Math.random() < 0.4) state.player.stats.combat += 1;
-    ui.addLog("Latihan selesai. Pasukan lebih disiplin (+1 Tactics" + (Math.random() < 0.4 ? ", +1 Combat" : "") + ").");
+    let combatGain = false;
+    if (Math.random() < 0.4) { state.player.stats.combat += 1; combatGain = true; }
+    ui.addLog("Latihan selesai. Pasukan lebih disiplin (+1 Tactics" + (combatGain ? ", +1 Combat" : "") + ").");
     ui.renderAll();
+  },
+
+  /** Tambah reputasi dengan clamp & log opsional */
+  addReputation(amount, reason) {
+    if (!amount) return;
+    state.player.reputation += amount;
+    if (reason) ui.addLog(`Reputasi ${amount > 0 ? '+' : ''}${amount}: ${reason}`);
+  },
+
+  /** Buka trait jika belum dimiliki */
+  grantTrait(traitId) {
+    if (state.player.traits.includes(traitId)) return false;
+    const def = state.traitDefs.find(t => t.id === traitId);
+    if (!def) return false;
+    state.player.traits.push(traitId);
+
+    // Efek pasif saat membuka
+    if (traitId === "duelist") state.player.stats.combat += 1;
+    if (traitId === "battle_scarred") {
+      state.player.maxHealth += 10;
+      state.player.health += 10;
+    }
+    if (traitId === "trusted_sword") state.player.reputation += 2;
+    if (traitId === "honest_steward") state.player.stats.stewardship += 1;
+    if (traitId === "shadow_whisperer") state.player.stats.intrigue += 1;
+    if (traitId === "essos_voyager") state.player.stats.diplomacy += 1;
+    if (traitId === "war_veteran") {
+      state.player.stats.tactics += 1;
+      state.player.stats.combat += 1;
+    }
+
+    ui.addLog(`TRAIT TERBUKA: ${def.name} — ${def.desc}`);
+    return true;
   },
 
   triggerRandomJobEvent() {
@@ -1625,6 +1801,7 @@ const game = {
 
     let landIncome = state.player.landHectares * state.landMarket.rentIncomePerHectare;
     if (state.player.unlockedTalents.includes("t2")) landIncome = Math.floor(landIncome * 1.15);
+    if (state.player.traits.includes("honest_steward")) landIncome = Math.floor(landIncome * 1.1);
     income += landIncome;
 
     if (state.player.currentJob) {
@@ -1632,9 +1809,22 @@ const game = {
       if (activeJob) {
         let currentRank = activeJob.ranks[state.player.jobRankIndex];
         let jobIncome = currentRank.income;
+        // Bonus Free Company
+        if (state.player.currentJob === "mercenary" && state.player.mercenaryCompany) {
+          const co = state.mercenaryCompanies.find(c => c.id === state.player.mercenaryCompany);
+          if (co) jobIncome = Math.floor(jobIncome * (co.incomeMult || 1));
+        }
         if (state.player.unlockedTalents.includes("t2")) jobIncome = Math.floor(jobIncome * 1.15);
+        if (state.player.traits.includes("merchant_prince")) jobIncome = Math.floor(jobIncome * 1.15);
+        if (state.player.traits.includes("honest_steward") && state.player.currentJob === "scribe") {
+          jobIncome = Math.floor(jobIncome * 1.1);
+        }
         income += jobIncome;
         game.addJobExp(20);
+        // Reputasi kecil tiap bulan dari pekerjaan terhormat
+        if (["guard", "scribe", "knight_vassal"].includes(state.player.currentJob) && Math.random() < 0.35) {
+          game.addReputation(1, "Pelayanan setia di pekerjaan");
+        }
       }
     }
 
