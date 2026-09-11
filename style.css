@@ -886,3 +886,271 @@ input:focus, select:focus {
 @media (max-width: 1200px) {
   .travel-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ==========================================================================
+   8. IMMERSIVE GAME POLISH — less "admin panel", more chronicle / war room
+   ========================================================================== */
+body {
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(60, 40, 20, 0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(40, 20, 10, 0.4) 0%, transparent 45%),
+    linear-gradient(180deg, #120e0b 0%, #0a0705 100%);
+}
+
+.topbar {
+  background: linear-gradient(180deg, #2a2118 0%, #16110d 100%);
+  border-bottom: 2px solid var(--vic-gold-dark);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  height: 64px;
+}
+
+.brand-title {
+  font-size: 1.05rem;
+  text-shadow: 0 0 12px rgba(240, 210, 133, 0.35);
+}
+
+.stat-pill {
+  background: linear-gradient(180deg, #15110c 0%, #0b0806 100%);
+  border: 1px solid var(--vic-mahogany-border);
+  box-shadow: inset 0 1px 0 rgba(240, 210, 133, 0.08);
+  min-width: 72px;
+  transition: border-color 0.2s;
+}
+
+.stat-pill:hover {
+  border-color: var(--vic-gold-mid);
+}
+
+.btn-turn {
+  padding: 10px 22px;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  box-shadow: 0 0 0 1px rgba(2, 195, 154, 0.3), 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.btn-turn:hover {
+  transform: translateY(-1px);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #1c1612 0%, #120e0b 100%);
+  border-right: 1px solid var(--vic-gold-dark);
+  width: 240px;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+}
+
+.nav-item {
+  margin: 2px 10px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+  padding: 11px 14px;
+}
+
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(197, 155, 39, 0.22) 0%, rgba(197, 155, 39, 0.06) 100%);
+  border-left-color: var(--vic-gold-bright);
+  box-shadow: inset 0 0 12px rgba(240, 210, 133, 0.08);
+}
+
+.viewport {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(40, 30, 20, 0.5) 0%, transparent 55%),
+    linear-gradient(180deg, #14100c 0%, #0a0705 100%);
+  padding: 22px 24px;
+}
+
+.v-card {
+  background: linear-gradient(165deg, rgba(28, 22, 16, 0.95) 0%, rgba(14, 10, 8, 0.98) 100%);
+  border: 1px solid var(--vic-mahogany-border);
+  border-top-color: rgba(197, 155, 39, 0.35);
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(240, 210, 133, 0.06);
+  border-radius: 5px;
+  position: relative;
+}
+
+.v-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 12px; right: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240, 210, 133, 0.25), transparent);
+  pointer-events: none;
+}
+
+.card-header {
+  font-size: 0.92rem;
+  letter-spacing: 1.5px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.job-card, .shop-card, .talent-card, .location-card, .province-card, .inbox-item {
+  background: linear-gradient(160deg, #14100b 0%, #0c0907 100%);
+  transition: transform 0.18s ease, border-color 0.18s, box-shadow 0.18s;
+}
+
+.job-card:hover, .shop-card:hover, .talent-card:hover, .location-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+}
+
+.v-btn {
+  background: linear-gradient(180deg, #3a2c1c 0%, #1e160f 100%);
+  border: 1px solid var(--vic-mahogany-border);
+  letter-spacing: 0.3px;
+}
+
+.v-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #4a3824 0%, #2a1e14 100%);
+  box-shadow: 0 0 10px rgba(197, 155, 39, 0.25);
+}
+
+/* Combat / Duel result styling */
+.combat-result-box {
+  background: #0d0a08;
+  border: 1px solid var(--vic-mahogany-border);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.combat-result-box.win {
+  border-color: var(--fm-green-accent);
+  box-shadow: 0 0 12px rgba(2, 195, 154, 0.15);
+}
+
+.combat-result-box.lose {
+  border-color: var(--fm-red-accent);
+  box-shadow: 0 0 12px rgba(229, 62, 62, 0.15);
+}
+
+.combat-power {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-family: var(--font-cinzel);
+  font-size: 0.9rem;
+}
+
+.combat-power span {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  background: #0a0705;
+  border-radius: 3px;
+  border: 1px solid var(--vic-mahogany-border);
+}
+
+.combat-power .you { color: var(--vic-gold-bright); }
+.combat-power .enemy { color: #ff8a8a; }
+
+.military-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.skirmish-btn {
+  background: linear-gradient(180deg, #4a1a1a 0%, #2a0c0c 100%);
+  border: 1px solid var(--fm-red-accent);
+  color: #ffdada;
+  font-family: var(--font-cinzel);
+  font-size: 0.8rem;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.skirmish-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #6b2424 0%, #3b1212 100%);
+  box-shadow: 0 0 12px rgba(229, 62, 62, 0.35);
+}
+
+.skirmish-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.troop-stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #0d0a08;
+  border: 1px solid var(--vic-mahogany-border);
+  border-radius: 3px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.duel-badge {
+  display: inline-block;
+  background: #3b1414;
+  color: #ffb4b4;
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Soft parchment feel for event body */
+.event-body-text {
+  background: linear-gradient(180deg, #16120e 0%, #0f0b08 100%);
+  border-left: 3px solid var(--vic-gold-mid);
+}
+
+.choice-btn {
+  background: linear-gradient(180deg, #2c2218 0%, #1a140f 100%);
+  border: 1px solid var(--vic-mahogany-border);
+  transition: all 0.18s;
+}
+
+.choice-btn:hover {
+  border-color: var(--vic-gold-mid);
+  background: linear-gradient(180deg, #3a2c1c 0%, #221a12 100%);
+  color: var(--vic-gold-bright);
+}
+
+/* Subtle pulse on unread */
+.inbox-item.unread {
+  animation: subtlePulse 2.5s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(2, 195, 154, 0); }
+  50% { box-shadow: 0 0 10px 0 rgba(2, 195, 154, 0.12); }
+}
+
+.fm-log-box {
+  background: #060504;
+  border: 1px solid var(--vic-mahogany-border);
+  font-family: 'Inter', monospace;
+  line-height: 1.45;
+}
+
+.log-item {
+  border-bottom: 1px dashed rgba(59, 44, 26, 0.35);
+}
+
+/* Make creation screen more grand */
+.login-frame {
+  box-shadow:
+    0 0 60px rgba(0, 0, 0, 0.9),
+    0 0 30px rgba(197, 155, 39, 0.12),
+    inset 0 0 20px rgba(197, 155, 39, 0.08);
+}
+
+@media (max-width: 1100px) {
+  .fm-stat-bar { gap: 4px; }
+  .stat-pill { min-width: 58px; padding: 3px 6px; }
+  .stat-val { font-size: 0.72rem; }
+}
