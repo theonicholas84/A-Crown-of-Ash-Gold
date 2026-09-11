@@ -36,7 +36,14 @@ const state = {
     inventory: {},
     unlockedTalents: [],
     traits: [],
-    mercenaryCompany: null
+    mercenaryCompany: null,
+    lordRelation: 50,          // 0-100 hubungan dengan Lord aktif
+    buildings: {},             // id -> level/count
+    danyFavor: 0,              // favor khusus Daenerys (untuk inner circle)
+    innerCircle: false,        // apakah jadi inti bersama Barristan dll
+    marriedTo: null,           // { name, house, bonus }
+    warParticipation: 0,       // berapa kali ikut perang besar
+    prestigeActionsUsed: {}    // cooldown sederhana
   },
   landMarket: {
     pricePerHectare: 25,
@@ -164,8 +171,59 @@ const state = {
     { id: "shadow_whisperer", name: "Bisikan Bayangan", desc: "+1 Intrigue. Peluang event rahasia meningkat.", trigger: "good_informant" },
     { id: "essos_voyager", name: "Pengelana Essos", desc: "Sudah menyeberangi Laut Sempit. +1 Diplomacy.", trigger: "essos_visit" },
     { id: "merchant_prince", name: "Pangeran Dagang", desc: "+15% Gold dari pekerjaan. Membuka lewat perdagangan sukses.", trigger: "merchant_success" },
-    { id: "war_veteran", name: "Veteran Perang", desc: "+1 Tactics & +1 Combat. Dari kampanye House.", trigger: "war_campaign" }
+    { id: "war_veteran", name: "Veteran Perang", desc: "+1 Tactics & +1 Combat. Dari kampanye House.", trigger: "war_campaign" },
+    { id: "queens_inner", name: "Lingkaran Dalam Ratu", desc: "Dipercaya Daenerys setara Barristan. +2 Diplomacy, +1 Prestige/bulan.", trigger: "dany_inner" },
+    { id: "landed_builder", name: "Pembangun Wilayah", desc: "Membangun 3 struktur. +1 Stewardship.", trigger: "builder" }
   ],
+
+  // Bangunan yang bisa dibangun setelah punya House Vassal
+  buildingDefs: [
+    { id: "village", name: "Desa Petani", cost: 120, prestigeReq: 20, desc: "+3 Gold sewa/bulan, +1 Reputasi/tahun.", goldPerMonth: 3, max: 5 },
+    { id: "watchtower", name: "Menara Pengawas", cost: 180, prestigeReq: 25, desc: "+1 Tactics permanen (sekali), kurangi risiko bandit.", tacticsOnce: 1, max: 2 },
+    { id: "market", name: "Pasar Desa", cost: 220, prestigeReq: 30, desc: "+5 Gold/bulan, +1 Stewardship sekali.", goldPerMonth: 5, stewardshipOnce: 1, max: 2 },
+    { id: "sept", name: "Sept / Kuil Kecil", cost: 150, prestigeReq: 22, desc: "+2 Reputasi saat dibangun, +1 Diplomacy sekali.", reputation: 2, diplomacyOnce: 1, max: 1 },
+    { id: "barracks", name: "Barak Prajurit", cost: 280, prestigeReq: 35, desc: "Rekrut 5 prajurit gratis sekali, upkeep -10%.", freeMen: 5, max: 2 },
+    { id: "keep", name: "Kastil Kecil (Keep)", cost: 600, prestigeReq: 50, desc: "+10 Gold/bulan, +5 Prestige saat dibangun, +2 Max Health/bulan regenerasi partial.", goldPerMonth: 10, prestigeOnBuild: 5, max: 1 },
+    { id: "great_hall", name: "Balai Agung", cost: 400, prestigeReq: 45, desc: "Buka aksi Prestige Feast. +3 Prestige saat dibangun.", prestigeOnBuild: 3, enablesFeast: true, max: 1 }
+  ],
+
+  // House minor untuk tawaran pernikahan (ASOIAF-flavored)
+  minorHouses: {
+    stark: [
+      { name: "House Karstark", heir: "Alys Karstark", region: "The North" },
+      { name: "House Mormont", heir: "Lyanna Mormont", region: "Bear Island" },
+      { name: "House Glover", heir: "Robett Glover's kin", region: "Deepwood Motte" }
+    ],
+    lannister: [
+      { name: "House Lefford", heir: "Alysanne Lefford", region: "Golden Tooth" },
+      { name: "House Crakehall", heir: "Meredyth Crakehall", region: "Crakehall" },
+      { name: "House Marbrand", heir: "Addam Marbrand's cousin", region: "Ashemark" }
+    ],
+    tyrell: [
+      { name: "House Redwyne", heir: "Desmera Redwyne", region: "The Arbor" },
+      { name: "House Hightower", heir: "Lynesse Hightower", region: "Oldtown" },
+      { name: "House Tarly", heir: "Talla Tarly", region: "Horn Hill" }
+    ],
+    baratheon: [
+      { name: "House Estermont", heir: "Cassana Estermont", region: "Greenstone" },
+      { name: "House Swann", heir: "Gulian Swann's kin", region: "Stonehelm" }
+    ],
+    martell: [
+      { name: "House Dayne", heir: "Allyria Dayne", region: "Starfall" },
+      { name: "House Uller", heir: "Ellaria's kin", region: "Hellholt" }
+    ],
+    greyjoy: [
+      { name: "House Harlaw", heir: "Gwynesse Harlaw", region: "Ten Towers" },
+      { name: "House Botley", heir: "Tris Botley", region: "Lordsport" }
+    ],
+    velaryon: [
+      { name: "House Celtigar", heir: "Prudence Celtigar", region: "Claw Isle" }
+    ],
+    targaryen: [
+      { name: "House Yronwood", heir: "Ynys Yronwood", region: "Yronwood (ally)" },
+      { name: "House Tolos", heir: "Merchant-princess of Tolos", region: "Essos" }
+    ]
+  },
 
   shopItems: [
     { id: "bread", name: "Roti Garam & Ransum", cost: 5, desc: "Memulihkan 30 Hunger.", type: "food", val: 30, category: "Makanan & Minuman" },
@@ -534,18 +592,128 @@ const houseWarEvents = {
       choices: [{ text: "Pimpin Blokade Laut (+1 Tactics, +15 Prestige)", effect: (p) => { p.stats.tactics += 1; p.prestige += 15; return "Blokade laut berjalan sukses menahan bantuan musuh."; } }] }
   ],
   targaryen: [
-    { triggerYear: 299, triggerMonth: 8, id: "hw-dae-1", title: "PANGGILAN PERANG: Pembebasan Astapor", type: "Kampanye Essos", sender: "Ser Jorah Mormont",
-      desc: "Daenerys memerintahkan penyerangan terhadap para tuan budak di Astapor untuk membebaskan pasukan Unsullied.",
-      choices: [{ text: "Ikut Serangan Pembebasan (+15 Prestige, +2 Combat)", effect: (p) => { p.prestige += 15; p.stats.combat += 2; return "Astapor jatuh dan ribuan budak dibebaskan atas nama Ratu Naga."; } }] },
-    { triggerYear: 300, triggerMonth: 1, id: "hw-dae-2", title: "Penaklukan Yunkai", type: "Kampanye Essos", sender: "Utusan Ratu",
-      desc: "Pasukan Daenerys mengepung Yunkai, kota kuning para pedagang budak kenikmatan.",
-      choices: [{ text: "Ikut Pengepungan (+20 EXP, +1 Tactics)", effect: (p) => { game.addJobExp(20); p.stats.tactics += 1; return "Yunkai menyerah tanpa perlawanan berarti."; } }] },
-    { triggerYear: 302, triggerMonth: 5, id: "hw-dae-3", title: "PANGGILAN PERANG: Perebutan Meereen", type: "Kampanye Essos", sender: "Daenerys Targaryen",
-      desc: "Pertempuran besar pecah di gerbang Meereen. Ratu Naga membutuhkan pasukan setianya untuk merebut kota.",
-      choices: [{ text: "Serbu Gerbang Kota (+25 Prestige, -20 Health)", effect: (p) => { p.prestige += 25; p.health = Math.max(1, p.health - 20); return "Meereen jatuh, dan Anda dikenal sebagai salah satu pahlawan penaklukan."; } }] },
-    { triggerYear: 305, triggerMonth: 5, id: "hw-dae-4", title: "PANGGILAN PERANG: Serangan ke King's Landing", type: "Kampanye Essos", sender: "Daenerys Targaryen",
-      desc: "Armada dan naga Ratu Daenerys akhirnya berlayar menuju Westeros untuk merebut Iron Throne dari Cersei Lannister.",
-      choices: [{ text: "Ikut Menyerbu King's Landing (+30 Prestige, +80 Gold, -25 Health)", effect: (p) => { p.prestige += 30; p.gold += 80; p.health = Math.max(1, p.health - 25); return "Api naga membakar kota, dan nama Anda tercatat dalam penaklukan terakhir."; } }] }
+    { triggerYear: 299, triggerMonth: 8, id: "hw-dae-1", title: "PANGGILAN: Pembebasan Astapor", type: "Kampanye Essos", sender: "Ser Jorah Mormont",
+      desc: "Daenerys memerintahkan penyerangan terhadap para tuan budak di Astapor. Ser Jorah meminta Anda di garis depan bersama Unsullied yang baru dibebaskan.",
+      choices: [
+        { text: "⚔️ Maju bersama Unsullied", effect: (p) => {
+          p.prestige += 12; p.stats.combat += 1; p.danyFavor = (p.danyFavor||0) + 8; p.warParticipation = (p.warParticipation||0)+1;
+          game.addReputation(3, "Pembebasan Astapor");
+          return "Astapor jatuh. Ratu mengingat keberanian Anda di depan dinding kota.";
+        }},
+        { text: "Amankan warga sipil (+1 Diplomacy, +favor)", effect: (p) => {
+          p.stats.diplomacy += 1; p.danyFavor = (p.danyFavor||0) + 10;
+          return "Anda melindungi orang-orang kecil. Missandei menyampaikan pujian Ratu kepada Anda.";
+        }}
+      ] },
+    { triggerYear: 299, triggerMonth: 11, id: "hw-dae-1b", title: "Audiensi dengan Ratu Naga", type: "Istana Essos", sender: "Missandei",
+      desc: "Setelah Astapor, Daenerys memanggil para sworn sword-nya. Ia menatap Anda dan bertanya apa yang membuat seseorang layak memimpin.",
+      choices: [
+        { text: "Jawab dengan kejujuran (+favor besar, +2 Diplomacy)", effect: (p) => {
+          p.danyFavor = (p.danyFavor||0) + 15; p.stats.diplomacy += 2; p.prestige += 5;
+          return "Ratu tersenyum tipis. 'Anda berbicara seperti orang yang pernah lapar,' katanya.";
+        }},
+        { text: "Tawarkan sumpah seumur hidup (+favor, +Prestige)", effect: (p) => {
+          p.danyFavor = (p.danyFavor||0) + 12; p.prestige += 8;
+          return "Sumpah Anda diterima. Ser Jorah mengangguk hormat dari samping tahta.";
+        }}
+      ] },
+    { triggerYear: 300, triggerMonth: 1, id: "hw-dae-2", title: "Penaklukan Yunkai", type: "Kampanye Essos", sender: "Daario Naharis",
+      desc: "Yunkai dikepung. Daario menantang Anda membuktikan nilai di medan tempur, sementara Ratu menunggu hasilnya.",
+      choices: [
+        { text: "⚔️ Pimpin serangan gerbang", effect: (p) => {
+          const r = game.resolveDuel(p, 14, "Kapten Yunkai", { winPrestige: 10, winCombat: 1, winExp: 25, loseHealth: 16 });
+          p.danyFavor = (p.danyFavor||0) + 6; p.warParticipation = (p.warParticipation||0)+1;
+          return r + " Yunkai menyerah. Nama Anda disebut di tenda Ratu.";
+        }},
+        { text: "Negosiasi penyerahan (+Diplomacy, +favor)", effect: (p) => {
+          p.stats.diplomacy += 2; p.danyFavor = (p.danyFavor||0) + 8; game.addJobExp(15);
+          return "Anda membantu menyusun syarat penyerahan. Darah lebih sedikit tertumpah.";
+        }}
+      ] },
+    { triggerYear: 300, triggerMonth: 6, id: "hw-dae-2b", title: "Ser Barristan Selmy Bergabung", type: "Istana Essos", sender: "Ser Barristan the Bold",
+      desc: "Seorang ksatria tua membuka helmnya di depan Ratu: Ser Barristan Selmy, mantan Lord Commander Kingsguard. Ia menawarkan sumpah. Ratu meminta pendapat Anda.",
+      choices: [
+        { text: "Dukung penerimaan Barristan (+favor, +Prestige)", effect: (p) => {
+          p.danyFavor = (p.danyFavor||0) + 10; p.prestige += 6; p.stats.diplomacy += 1;
+          return "Barristan diterima. Ia memandang Anda sebagai rekan yang layak dihormati.";
+        }},
+        { text: "Desak ujian kesetiaan dulu (+Intrigue)", effect: (p) => {
+          p.stats.intrigue += 1; p.danyFavor = (p.danyFavor||0) + 4;
+          return "Ratu menguji Barristan. Ia lulus. Hubungan Anda dengan sang ksatria tua tetap formal.";
+        }}
+      ] },
+    { triggerYear: 302, triggerMonth: 5, id: "hw-dae-3", title: "PERANG: Perebutan Meereen", type: "Kampanye Essos", sender: "Daenerys Targaryen",
+      desc: "Gerbang Meereen. Ratu menunggangi Drogon di langit. Barristan memimpin serangan darat dan meminta Anda di sisinya.",
+      choices: [
+        { text: "⚔️ Serbu bersama Barristan", effect: (p) => {
+          let msg;
+          if (p.men >= 5) msg = game.resolveBattle(p, 20, "Garnisun Meereen", { winPrestige: 20, winGold: 40, winCombat: 1 });
+          else msg = game.resolveDuel(p, 16, "Kapten Garnisun Meereen", { winPrestige: 18, winExp: 30, winCombat: 1, loseHealth: 18 });
+          p.danyFavor = (p.danyFavor||0) + 15; p.warParticipation = (p.warParticipation||0)+1;
+          game.addReputation(4, "Penaklukan Meereen");
+          return msg + " Meereen jatuh. Ratu berdiri di puncak piramida.";
+        }},
+        { text: "Amankan rantai & logistik (+Stewardship)", effect: (p) => {
+          p.stats.stewardship += 2; p.danyFavor = (p.danyFavor||0) + 8; game.addJobExp(20);
+          return "Pasokan aman. Barristan memuji disiplin Anda di belakang garis.";
+        }}
+      ] },
+    { triggerYear: 302, triggerMonth: 8, id: "hw-dae-3b", title: "Undangan Lingkaran Dalam", type: "Istana Essos", sender: "Daenerys Targaryen",
+      desc: "Di ruang peta Meereen, Ratu, Barristan, Missandei, dan Grey Worm membahas pemerintahan. Jika favor Anda cukup tinggi, Ratu menawarkan kursi di lingkaran dalamnya.",
+      choices: [
+        { text: "Terima — jadi bagian inti Ratu (syarat favor ≥ 40)", effect: (p) => {
+          if ((p.danyFavor||0) < 40) return "Ratu mengangguk sopan, namun kursi itu belum untuk Anda. Tingkatkan jasa dulu.";
+          p.innerCircle = true; p.title = "Advisor & Sworn Sword of the Queen";
+          p.prestige += 15; p.stats.diplomacy += 2; game.grantTrait("queens_inner");
+          game.addReputation(8, "Diangkat ke Lingkaran Dalam Ratu");
+          return "Barristan menepuk bahu Anda. 'Selamat datang di sisi Ratu yang sejati.' Anda kini setara penasihat inti.";
+        }},
+        { text: "Tetap di garis militer saja", effect: (p) => {
+          p.stats.combat += 1; p.danyFavor = (p.danyFavor||0) + 5;
+          return "Anda memilih medan tempur. Ratu menghormati pilihan itu.";
+        }}
+      ] },
+    { triggerYear: 303, triggerMonth: 4, id: "hw-dae-3c", title: "Konspirasi Sons of the Harpy", type: "Intrik Meereen", sender: "Grey Worm",
+      desc: "Pembunuhan malam hari menarget pejabat Ratu. Grey Worm meminta bantuan menyelidiki atau memburu para Harpy.",
+      choices: [
+        { text: "Burui di lorong malam (+Intrigue, +favor)", effect: (p) => {
+          p.stats.intrigue += 2; p.danyFavor = (p.danyFavor||0) + 8; game.addJobExp(15);
+          return "Beberapa topeng Harpy jatuh. Kota sedikit lebih aman.";
+        }},
+        { text: "Jaga Barristan & Ratu secara langsung", effect: (p) => {
+          p.prestige += 5; p.danyFavor = (p.danyFavor||0) + 10;
+          return "Tidak ada pisau yang mendekati Ratu malam itu. Barristan menghormati kewaspadaan Anda.";
+        }}
+      ] },
+    { triggerYear: 305, triggerMonth: 2, id: "hw-dae-4a", title: "Rapat Perang: Menuju Westeros", type: "Kampanye Essos", sender: "Tyrion Lannister (Hand)",
+      desc: "Armada siap. Tyrion, Barristan, dan Ratu merencanakan pendaratan. Sebagai bagian dari lingkaran (atau sworn sword senior), Anda diminta suara.",
+      choices: [
+        { text: "Dukung pendaratan di Dragonstone", effect: (p) => {
+          p.stats.tactics += 1; p.danyFavor = (p.danyFavor||0) + 6; p.prestige += 5;
+          return "Rencana disetujui. Naga akan menyentuh batu leluhur Targaryen terlebih dulu.";
+        }},
+        { text: "Desak aliansi Utara dulu (+Diplomacy)", effect: (p) => {
+          p.stats.diplomacy += 1; p.danyFavor = (p.danyFavor||0) + 5;
+          return "Tyrion mengangguk. Diplomasi ke Utara akan dicoba bersamaan dengan armada.";
+        }}
+      ] },
+    { triggerYear: 305, triggerMonth: 5, id: "hw-dae-4", title: "PERANG AKHIR: Serangan King's Landing", type: "Kampanye Essos", sender: "Daenerys Targaryen",
+      desc: "Langit merah di atas ibukota. Drogon meraung. Ratu memberi Anda kehormatan memimpin satu sayap serangan darat bersama Barristan (atau sisa loyalis).",
+      choices: [
+        { text: "⚔️ Pimpin sayap serangan", effect: (p) => {
+          let msg;
+          if (p.men >= 8) msg = game.resolveBattle(p, 25, "Pasukan Cersei", { winPrestige: 30, winGold: 100, winCombat: 2 });
+          else msg = game.resolveDuel(p, 18, "Ksatria Lannister", { winPrestige: 25, winGold: 60, winCombat: 1, loseHealth: 22 });
+          p.danyFavor = (p.danyFavor||0) + 20; p.warParticipation = (p.warParticipation||0)+1;
+          p.prestige += 10; game.addReputation(6, "Pertempuran King's Landing");
+          if (p.innerCircle) p.title = "Lord Commander of the Queen's Guard";
+          return msg + " Kota jatuh. Sejarah mencatat nama Anda di sisi Ratu Naga.";
+        }},
+        { text: "Amankan warga & tahan penjarahan", effect: (p) => {
+          p.stats.diplomacy += 2; p.reputation += 10; p.danyFavor = (p.danyFavor||0) + 12;
+          return "Anda menahan pasukan dari pembantaian. Beberapa akan mengingat belas kasihan itu.";
+        }}
+      ] }
   ]
 };
 
@@ -729,11 +897,50 @@ const ui = {
     const house = state.nobleHouses.find(h => h.id === state.player.activeNobleHouse);
 
     if (state.player.vassalHouseName) {
+      const rel = state.player.lordRelation || 50;
+      let relColor = rel >= 70 ? '#02c39a' : rel >= 40 ? '#f0c961' : '#ff6b6b';
+      let relLabel = rel >= 80 ? 'Sangat Dekat' : rel >= 60 ? 'Baik' : rel >= 40 ? 'Netral' : rel >= 20 ? 'Dingin' : 'Buruk';
+      const married = state.player.marriedTo
+        ? `<div style="margin-top:8px;font-size:0.8rem;color:var(--vic-gold-bright);">💍 Menikah dengan ${state.player.marriedTo.name} (${state.player.marriedTo.house})</div>`
+        : '';
+      const danyLine = state.player.activeNobleHouse === 'targaryen'
+        ? `<div style="margin-top:6px;font-size:0.78rem;color:#c4b5fd;">Favor Ratu Daenerys: <strong>${state.player.danyFavor||0}</strong>${state.player.innerCircle ? ' · 👑 LINGKARAN DALAM' : ''}</div>`
+        : '';
+
+      // Buildings list
+      let bHtml = '';
+      state.buildingDefs.forEach(def => {
+        const owned = state.player.buildings[def.id] || 0;
+        const canBuild = owned < def.max && state.player.gold >= def.cost && state.player.prestige >= def.prestigeReq;
+        bHtml += `<div class="troop-stat-line" style="flex-wrap:wrap;gap:6px;">
+          <span><strong>${def.name}</strong> (${owned}/${def.max}) — ${def.cost}G, Prestige≥${def.prestigeReq}<br><span style="font-size:0.72rem;color:var(--text-muted)">${def.desc}</span></span>
+          <button class="v-btn" onclick="game.buildStructure('${def.id}')" ${canBuild ? '' : 'disabled'}>Bangun</button>
+        </div>`;
+      });
+
       container.innerHTML = `
-        <div style="background:#0d0a08; border:1px solid var(--vic-gold-mid); padding:15px; border-radius:3px;">
-          <h3 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">⚜️ House ${state.player.vassalHouseName} (Noble Vassal)</h3>
-          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">House Anda berdiri secara resmi sebagai pengabdi terpercaya dari <strong>${house.name}</strong>.</p>
-          <div style="margin-top:10px; font-size:0.8rem; color:var(--fm-green-accent);">Bonus Prestise Bulanan: +2 Prestige</div>
+        <div style="background:#0d0a08; border:1px solid var(--vic-gold-mid); padding:15px; border-radius:3px; margin-bottom:14px;">
+          <h3 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel);">⚜️ House ${state.player.vassalHouseName}</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">Vassal dari <strong>${house.name}</strong></p>
+          <div style="margin-top:8px; font-size:0.82rem;">Relasi dengan Lord: <strong style="color:${relColor}">${rel}/100 (${relLabel})</strong></div>
+          <div style="font-size:0.8rem; color:var(--fm-green-accent); margin-top:4px;">Bonus Prestise Bulanan: +2</div>
+          ${danyLine}${married}
+        </div>
+        <div style="background:#0d0a08; border:1px solid var(--vic-mahogany-border); padding:15px; border-radius:3px; margin-bottom:14px;">
+          <h4 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel); margin-bottom:10px;">🏗️ PEMBANGUNAN WILAYAH</h4>
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:10px;">Bangun desa, menara, pasar, hingga kastil. Membutuhkan emas & prestige.</p>
+          ${bHtml}
+        </div>
+        <div style="background:#0d0a08; border:1px solid var(--vic-mahogany-border); padding:15px; border-radius:3px;">
+          <h4 style="color:var(--vic-gold-bright); font-family:var(--font-cinzel); margin-bottom:10px;">👑 AKSI PRESTIGE</h4>
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:10px;">Gunakan Prestige untuk audiensi, hadiah, turnamen, atau petisi tanah.</p>
+          <div class="military-action-row">
+            <button class="v-btn" onclick="game.prestigeAction('audience')" ${state.player.prestige < 8 ? 'disabled' : ''}>Audiensi Lord (8 Prestige)</button>
+            <button class="v-btn" onclick="game.prestigeAction('gift_lord')" ${state.player.prestige < 5 || state.player.gold < 40 ? 'disabled' : ''}>Hadiah Lord (5 Prestige + 40G)</button>
+            <button class="v-btn" onclick="game.prestigeAction('tourney')" ${state.player.prestige < 12 ? 'disabled' : ''}>Turnamen Kecil (12 Prestige)</button>
+            <button class="v-btn" onclick="game.prestigeAction('petition_land')" ${state.player.prestige < 20 ? 'disabled' : ''}>Petisi Tanah (20 Prestige)</button>
+            <button class="v-btn" onclick="game.prestigeAction('feast')" ${state.player.prestige < 15 || !(state.player.buildings.great_hall > 0) ? 'disabled' : ''}>Feast di Balai Agung (15 Prestige)</button>
+          </div>
         </div>
       `;
       return;
@@ -1286,6 +1493,8 @@ const game = {
     state.player.title = house.titleOffer;
     state.player.prestige += 5;
     state.player.reputation += 5;
+    state.player.lordRelation = 55;
+    if (house.id === "targaryen") state.player.danyFavor = (state.player.danyFavor || 0) + 5;
     game.grantTrait("trusted_sword");
     if (house.id === "targaryen") game.grantTrait("essos_voyager");
 
@@ -1592,6 +1801,8 @@ const game = {
       p._battleWins = (p._battleWins || 0) + 1;
       if (p._battleWins >= 2) game.grantTrait("battle_scarred");
       if (rewards.winPrestige && rewards.winPrestige >= 10) game.grantTrait("war_veteran");
+      if (p.activeNobleHouse) game.changeLordRelation(4, "Berkontribusi dalam pertempuran untuk Lord");
+      p.warParticipation = (p.warParticipation || 0) + 1;
       return `🛡️ PERTEMPURAN MENANG vs ${enemyName}! (Kekuatan ${playerForce} vs ${enemyForce}). Kehilangan ${menLost} prajurit, -${dmg} HP. ${rewards.winPrestige ? '+' + rewards.winPrestige + ' Prestige. ' : ''}${rewards.winGold ? '+' + rewards.winGold + ' Gold.' : ''}`;
     } else {
       menLost = Math.min(p.men, Math.max(1, Math.floor(p.men * 0.25 + enemyMen * 0.1)));
@@ -1660,7 +1871,6 @@ const game = {
     if (!def) return false;
     state.player.traits.push(traitId);
 
-    // Efek pasif saat membuka
     if (traitId === "duelist") state.player.stats.combat += 1;
     if (traitId === "battle_scarred") {
       state.player.maxHealth += 10;
@@ -1674,9 +1884,163 @@ const game = {
       state.player.stats.tactics += 1;
       state.player.stats.combat += 1;
     }
+    if (traitId === "queens_inner") state.player.stats.diplomacy += 2;
+    if (traitId === "landed_builder") state.player.stats.stewardship += 1;
 
     ui.addLog(`TRAIT TERBUKA: ${def.name} — ${def.desc}`);
     return true;
+  },
+
+  changeLordRelation(delta, reason) {
+    if (!state.player.activeNobleHouse) return;
+    state.player.lordRelation = Math.max(0, Math.min(100, (state.player.lordRelation || 50) + delta));
+    if (reason) ui.addLog(`Relasi Lord ${delta >= 0 ? '+' : ''}${delta}: ${reason} (sekarang ${state.player.lordRelation}/100)`);
+  },
+
+  buildStructure(buildingId) {
+    const def = state.buildingDefs.find(b => b.id === buildingId);
+    if (!def) return;
+    if (!state.player.vassalHouseName) {
+      ui.addLog("Anda harus memiliki House Vassal untuk membangun struktur.");
+      return;
+    }
+    const owned = state.player.buildings[buildingId] || 0;
+    if (owned >= def.max) {
+      ui.addLog(`Batas maksimal ${def.name} sudah tercapai.`);
+      return;
+    }
+    if (state.player.gold < def.cost) {
+      ui.addLog("Emas tidak cukup.");
+      return;
+    }
+    if (state.player.prestige < def.prestigeReq) {
+      ui.addLog(`Butuh Prestige ≥ ${def.prestigeReq} untuk membangun ${def.name}.`);
+      return;
+    }
+    state.player.gold -= def.cost;
+    state.player.buildings[buildingId] = owned + 1;
+
+    if (def.tacticsOnce) state.player.stats.tactics += def.tacticsOnce;
+    if (def.stewardshipOnce) state.player.stats.stewardship += def.stewardshipOnce;
+    if (def.diplomacyOnce) state.player.stats.diplomacy += def.diplomacyOnce;
+    if (def.reputation) game.addReputation(def.reputation, `Membangun ${def.name}`);
+    if (def.prestigeOnBuild) state.player.prestige += def.prestigeOnBuild;
+    if (def.freeMen) state.player.men += def.freeMen;
+
+    const totalBuildings = Object.values(state.player.buildings).reduce((a, b) => a + b, 0);
+    if (totalBuildings >= 3) game.grantTrait("landed_builder");
+
+    game.changeLordRelation(2, `Membangun ${def.name} di tanah vassal`);
+    ui.addLog(`Pembangunan selesai: ${def.name} (level ${owned + 1}).`);
+    ui.renderAll();
+  },
+
+  // Aksi yang membutuhkan Prestige
+  prestigeAction(actionId) {
+    const p = state.player;
+    const actions = {
+      audience: { cost: 8, name: "Minta Audiensi Lord", needLord: true },
+      feast: { cost: 15, name: "Gelar Pesta / Feast", needHall: true },
+      gift_lord: { cost: 5, gold: 40, name: "Hadiah untuk Lord" },
+      tourney: { cost: 12, name: "Selenggarakan Turnamen Kecil", needLord: true },
+      petition_land: { cost: 20, name: "Petisi Tambahan Tanah", needLord: true }
+    };
+    const act = actions[actionId];
+    if (!act) return;
+    if (p.prestige < act.cost) {
+      ui.addLog(`Prestige tidak cukup (butuh ${act.cost}).`);
+      return;
+    }
+    if (act.needLord && !p.activeNobleHouse) {
+      ui.addLog("Anda harus mengabdi pada seorang Lord.");
+      return;
+    }
+    if (act.needHall && !(p.buildings.great_hall > 0)) {
+      ui.addLog("Butuh Balai Agung untuk menggelar feast.");
+      return;
+    }
+    if (act.gold && p.gold < act.gold) {
+      ui.addLog("Emas tidak cukup untuk hadiah.");
+      return;
+    }
+
+    p.prestige -= act.cost;
+    if (act.gold) p.gold -= act.gold;
+
+    if (actionId === "audience") {
+      const gain = 5 + Math.floor(Math.random() * 6);
+      game.changeLordRelation(gain, "Audiensi pribadi");
+      p.stats.diplomacy += 1;
+      ui.addLog(`Audiensi berhasil. Lord mendengarkan Anda. +1 Diplomacy.`);
+    } else if (actionId === "feast") {
+      p.prestige += 8;
+      game.addReputation(3, "Feast di Balai Agung");
+      game.changeLordRelation(4, "Feast yang dihadiri bannermen");
+      // chance marriage rumor
+      if (Math.random() < 0.4 && !p.marriedTo) game.tryMarriageOffer();
+      ui.addLog("Feast meriah. Nama House Anda semakin dikenal.");
+    } else if (actionId === "gift_lord") {
+      game.changeLordRelation(8, "Hadiah mewah kepada Lord");
+      ui.addLog("Lord menerima hadiah dengan senyum tipis.");
+    } else if (actionId === "tourney") {
+      const r = game.resolveDuel(p, 12 + Math.floor(Math.random() * 5), "Lawanan Turnamen", {
+        winPrestige: 10, winGold: 25, winCombat: 1, loseHealth: 12, losePrestige: 2
+      });
+      game.changeLordRelation(3, "Turnamen di tanah Lord");
+      ui.addLog(r);
+    } else if (actionId === "petition_land") {
+      if (p.lordRelation >= 60) {
+        p.landHectares += 3;
+        game.changeLordRelation(-5, "Petisi tanah dikabulkan (Lord sedikit enggan)");
+        ui.addLog("Lord mengabulkan 3 Ha tanah tambahan!");
+      } else {
+        game.changeLordRelation(-3, "Petisi tanah ditolak");
+        ui.addLog("Lord menolak petisi. Relasi belum cukup hangat.");
+      }
+    }
+    ui.renderAll();
+  },
+
+  tryMarriageOffer() {
+    if (state.player.marriedTo) return;
+    if (!state.player.activeNobleHouse) return;
+    if (state.player.prestige < 25 || state.player.reputation < 15) return;
+
+    const pool = state.minorHouses[state.player.activeNobleHouse] || state.minorHouses.stark;
+    const match = pool[Math.floor(Math.random() * pool.length)];
+    const genderWord = state.player.gender === "Female" ? "putra" : "putri";
+    const heirName = match.heir;
+
+    state.inbox.unshift({
+      id: `marriage-${Date.now()}`,
+      title: `Tawaran Pernikahan: ${match.name}`,
+      sender: `Utusan ${match.name}`,
+      type: "Diplomasi Pernikahan",
+      date: `${state.date.year} AC, M${state.date.month}`,
+      desc: `House ${match.name} dari ${match.region}, sekutu loyal Lord Anda, menawarkan pernikahan dengan ${heirName}. Aliansi ini akan memperkuat posisi politik House Anda.`,
+      choices: [
+        {
+          text: `Terima pernikahan dengan ${heirName}`,
+          effect: (p) => {
+            p.marriedTo = { name: heirName, house: match.name, region: match.region };
+            p.prestige += 12;
+            p.reputation += 8;
+            p.stats.diplomacy += 1;
+            game.changeLordRelation(6, `Pernikahan aliansi dengan ${match.name}`);
+            return `Anda menikah dengan ${heirName} dari ${match.name}. Banner kedua rumah berkibar bersama.`;
+          }
+        },
+        {
+          text: "Tolak dengan hormat",
+          effect: (p) => {
+            game.changeLordRelation(-2, "Menolak tawaran pernikahan sekutu");
+            return "Utusan pergi dengan wajah formal. Pintu aliansi itu tertutup untuk saat ini.";
+          }
+        }
+      ],
+      read: false
+    });
+    ui.addLog(`TAWARAN PERNIKAHAN dari ${match.name} masuk kotak surat!`);
   },
 
   triggerRandomJobEvent() {
@@ -1830,6 +2194,41 @@ const game = {
 
     if (state.player.vassalHouseName) {
       state.player.prestige += 2;
+      // Building monthly gold
+      let buildGold = 0;
+      state.buildingDefs.forEach(def => {
+        const n = state.player.buildings[def.id] || 0;
+        if (n && def.goldPerMonth) buildGold += def.goldPerMonth * n;
+      });
+      if (buildGold > 0) {
+        income += buildGold;
+      }
+      // Keep regenerates a bit of health
+      if ((state.player.buildings.keep || 0) > 0 && state.player.health < state.player.maxHealth) {
+        state.player.health = Math.min(state.player.maxHealth, state.player.health + 2);
+      }
+    }
+
+    if (state.player.innerCircle || state.player.traits.includes("queens_inner")) {
+      state.player.prestige += 1;
+      state.player.danyFavor = (state.player.danyFavor || 0) + 1;
+    }
+
+    if (state.player.marriedTo) {
+      state.player.prestige += 1;
+      if (Math.random() < 0.2) game.addReputation(1, "Aliansi pernikahan");
+    }
+
+    // Chance tawaran pernikahan
+    if (!state.player.marriedTo && state.player.activeNobleHouse && state.player.prestige >= 28 && Math.random() < 0.08) {
+      game.tryMarriageOffer();
+    }
+
+    // Lord relation slow drift toward 50 if idle, or bonus if high war participation recently handled in events
+    if (state.player.activeNobleHouse && Math.random() < 0.15) {
+      // small NPC "mood" fluctuation
+      const mood = Math.floor(Math.random() * 5) - 2;
+      if (mood !== 0) game.changeLordRelation(mood, mood > 0 ? "Lord dalam suasana baik" : "Lord sedang murung");
     }
 
     let baseUpkeep = Math.floor(state.player.men * 0.5);
